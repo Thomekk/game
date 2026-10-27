@@ -263,48 +263,58 @@
   .modal__foot{ padding:10px 15px 14px; display:flex; gap:8px; flex:0 0 auto; }
   .modal__foot .btn{ padding:10px 14px; }
 
-  /* ───────── терминал ───────── */
+  /* ───────── терминал: тёмное окно как в Linux, важное — сверху ───────── */
   .term{
     position:fixed; z-index:36; left:50%; top:50%; transform:translate(-50%,-50%);
-    width:min(760px,95vw); height:min(560px,74dvh); display:flex; flex-direction:column;
-    background:#05090a; border:1px solid #2c6a5a;
-    box-shadow:0 0 0 6px rgba(0,0,0,.55), 0 40px 140px -40px #000, inset 0 0 90px rgba(30,255,180,.05);
-    font-family:var(--mono); color:#9dffcf;
+    width:min(780px,95vw); height:min(560px,76dvh); display:flex; flex-direction:column;
+    background:#0b0d10; border:1px solid #30363d; border-radius:8px; overflow:hidden;
+    box-shadow:0 0 0 1px rgba(0,0,0,.6), 0 40px 140px -40px #000, inset 0 0 90px rgba(80,160,255,.03);
+    font-family:var(--mono); color:#c9d1d9;
   }
   .term__bar{
-    display:flex; align-items:center; gap:10px; padding:8px 10px; flex:0 0 auto;
-    background:linear-gradient(180deg,#0d1a18,#08110f); border-bottom:1px solid #1d4a3f;
+    display:flex; align-items:center; gap:10px; padding:7px 10px; flex:0 0 auto;
+    background:linear-gradient(180deg,#1b2027,#14181d); border-bottom:1px solid #30363d;
   }
-  .term__dot{ width:9px; height:9px; border-radius:50%; background:#2c6a5a; box-shadow:0 0 10px -2px #23e3a8; }
-  .term__title{ font-size:11px; letter-spacing:.16em; color:#6fe0b6; text-transform:lowercase; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .term__dots{ display:flex; gap:6px; }
+  .term__dots i{ width:10px; height:10px; border-radius:50%; display:block; }
+  .term__dots i:nth-child(1){ background:#ff5f56; }
+  .term__dots i:nth-child(2){ background:#ffbd2e; }
+  .term__dots i:nth-child(3){ background:#27c93f; }
+  .term__title{ font-size:11px; letter-spacing:.04em; color:#8b949e; }
   .term__bar .x{
-    margin-left:auto; width:26px; height:26px; display:grid; place-items:center; cursor:pointer;
-    background:#0b1a17; border:1px solid #2c6a5a; color:#9dffcf; font:700 13px/1 var(--mono);
+    margin-left:auto; width:26px; height:24px; display:grid; place-items:center; cursor:pointer;
+    background:#161b22; border:1px solid #30363d; border-radius:4px; color:#8b949e; font:700 13px/1 var(--mono);
   }
   .term__bar .x:hover{ background:#3a0f16; border-color:#ff4d7a; color:#ffd0da; }
+  .term__body{ flex:1 1 auto; display:flex; flex-direction:column; min-height:0; }
+  /* важное — одной строкой сверху, ввод — сразу под последней строкой вывода */
+  .term__head{
+    flex:0 0 auto; padding:7px 12px; font-size:10.5px; line-height:1.5; color:#6e7681;
+    background:#0f1318; border-bottom:1px solid #21262d; letter-spacing:.02em;
+  }
+  .term__head b{ color:#7ee787; font-weight:600; }
   .term__out{
-    flex:1 1 auto; overflow:auto; -webkit-overflow-scrolling:touch; padding:12px 14px;
-    font-size:12.5px; line-height:1.55; white-space:pre-wrap; word-break:break-word;
-    background:repeating-linear-gradient(180deg, rgba(0,0,0,.22) 0 1px, transparent 1px 3px);
-    text-shadow:0 0 9px rgba(40,255,180,.35);
+    flex:1 1 auto; overflow:auto; -webkit-overflow-scrolling:touch; padding:8px 12px 10px;
+    font-size:12.5px; line-height:1.5; white-space:pre-wrap; word-break:break-word; background:#0b0d10;
   }
-  .term__out b{ color:#eafff5; font-weight:700; }
-  .term__out .ok{ color:#b8ff4d; }
-  .term__out .err{ color:#ff8fa6; }
-  .term__out .dim{ color:#5f9b87; }
-  .term__out .hl{ color:#ffcf6b; }
-  .term__line{ display:flex; gap:8px; align-items:center; padding:8px 14px 12px; flex:0 0 auto; border-top:1px solid #123029; }
-  .term__out .tl{ display:block; padding:1px 0; min-height:1.55em; white-space:pre-wrap; word-break:break-word; }
-  .term__out .tl.echo{ color:#52e0c0; margin-top:7px; }
-  .term__out .tl.ok{ color:#b8ff4d; }
-  .term__out .tl.err{ color:#ff8fa6; }
-  .term__ps1{ color:#52e0c0; font-size:12.5px; white-space:nowrap; }
+  .term__out .tl{ display:block; padding:0; min-height:1.45em; white-space:pre-wrap; word-break:break-word; }
+  .term__out .tl.echo{ color:#c9d1d9; margin-top:4px; }
+  .term__out .tl.echo b{ color:#7ee787; }
+  .term__out .tl.ok{ color:#7ee787; }
+  .term__out .tl.err{ color:#ff7b72; }
+  .term__out .tl.dim{ color:#6e7681; }
+  .term__out .tl.hl{ color:#e3b341; }
+  .term__out .tl.net{ color:#79c0ff; }
+  .term__out b{ color:#e6edf3; font-weight:700; }
+  .term__line{ display:flex; gap:7px; align-items:center; margin:0; padding:1px 0; flex:0 0 auto; }
+  .term__ps1{ color:#7ee787; font-size:12.5px; white-space:nowrap; }
+  .term__ps1 .host{ color:#7ee787; }
+  .term__ps1 .path{ color:#79c0ff; }
+  .term__ps1 .gt{ color:#c9d1d9; }
   .term__in{
-    flex:1 1 auto; min-width:0; background:transparent; border:0; outline:0; color:#d6ffe9;
-    font:13px/1.4 var(--mono); letter-spacing:.02em; caret-color:#b8ff4d;
+    flex:1 1 auto; min-width:0; background:transparent; border:0; outline:0; color:#e6edf3;
+    font:12.5px/1.4 var(--mono); letter-spacing:.01em; caret-color:#7ee787;
   }
-  .term__hint{ padding:0 14px 10px; font-size:10px; color:#4f8775; letter-spacing:.06em; }
-  .term__hint b{ color:#8fd8bd; font-weight:600; }
 
   /* ───────── подсказка «где я» ───────── */
   .place{ display:flex; gap:6px; align-items:center; }
@@ -423,18 +433,21 @@
 <!-- ── терминал ── -->
 <section class="term" id="ovTerm" hidden aria-modal="true" role="dialog">
   <div class="term__bar">
-    <span class="term__dot"></span>
-    <span class="term__title" id="termTitle">sanya@dom9: ~</span>
+    <span class="term__dots"><i></i><i></i><i></i></span>
+    <span class="term__title" id="termTitle">sanya@dom9: ~ — терминал</span>
     <button class="x" id="btnTermX" type="button" aria-label="Закрыть терминал">&times;</button>
   </div>
-  <div class="term__out" id="termOut"></div>
-  <div class="term__line">
-    <span class="term__ps1" id="termPs1">sanya@dom9:~$</span>
-    <input class="term__in" id="termIn" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Команда">
-  </div>
-  <div class="term__hint">
-    <b>help</b> — команды · <b>nmap</b> — скан дома · <b>ssh имя@адрес</b> — доступ ·
-    <b>contacts</b> — что уже известно · <b>exit</b> — выйти
+  <div class="term__body">
+    <div class="term__head" id="termHead">
+      <b>help</b> — команды · <b>nmap</b> — сеть дома · <b>ssh имя@адрес</b> — доступ ·
+      <b>nc адрес 4444</b> — чат · <b>contacts</b> — явки · <b>exit</b> — выход
+    </div>
+    <div class="term__out" id="termOut">
+      <div class="term__line" id="termLine">
+        <span class="term__ps1" id="termPs1"><span class="host">sanya@dom9</span><span class="gt">:</span><span class="path">~</span><span class="gt">$</span></span>
+        <input class="term__in" id="termIn" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Команда">
+      </div>
+    </div>
   </div>
 </section>
 
@@ -473,6 +486,7 @@ const DEFAULT_CONFIG = {
       railAlpha: 0.40,         // перила «перед» персонажем
       railAlphaBack: 0.78,     // перила позади персонажа
       speed: 150,              // скорость по маршу
+      slideSpeed: 320,         // скольжение по перилам (держишь [Скользить])
     },
     /* План этажа: комнаты = квартиры, коридоры их связывают.
        Правится в игре: Настройки → План этажа. */
@@ -513,8 +527,8 @@ const DEFAULT_CONFIG = {
     time: 'night',             // night | dawn | day | dusk
     season: 'autumn',          // spring | summer | autumn | winter
     weather: 'rain',           // clear | cloudy | rain | storm | snow | fog
-    auto: false,
-    autoEvery: 75,
+    auto: true,                // сама меняется по сезону и времени суток
+    autoEvery: 140,
   },
 
   doors: {
@@ -546,7 +560,9 @@ const DEFAULT_CONFIG = {
      'solid' — старый вариант, когда всё стоит стеной */
   collision: { props: 'none' },
 
-  sprites: { player: 'hoodie' },   // hoodie | tracksuit | varsity | bomber
+  /* hoodie | tracksuit | varsity | bomber | blackhoodie | blackjacket;
+     hood — надет ли капюшон (для чёрных вещей) */
+  sprites: { player: 'hoodie', hood: false },
 
   audio: { enabled: true, volume: 0.5 },
 
@@ -567,16 +583,19 @@ const DEFAULT_CONFIG = {
     /* кто живёт по адресам: floor + room (номер комнаты в плане) */
     people: [
       { id: 'tolya', f: 1, room: 0, name: 'Дядя Толя', flatRole: 'сантехник', user: 'tolya', ip: '10.9.3.11',
+        chat: ['на связи. стояк опять течёт, а насоса нет.', 'если свет вернёшь — я тебе первый налью. воды, конечно.', 'батарейки в стиралке, я писал.'],
         knock: ['Слышь, Санёк! Опять стояк потёк, а света нет — насос не качает.',
                 'Щиток в подвале. Три пробки — и весь дом оживёт. Только пробки по этажам раскиданы.'],
         hacked: ['в /home/tolya/стояк.txt: «ключ от подвала у бабы Зины, 3-й этаж»',
                  'в /home/tolya/вайфай.txt: «роутер на площадке, пароль 1993»'] },
       { id: 'luda', f: 2, room: 3, name: 'Люда', flatRole: 'студентка', user: 'luda', ip: '10.9.3.22',
+        chat: ['привет… я в дипломе, не отвлекай.', 'свет вырубили, а у меня не сохранено ничего.', 'у Мишки с седьмого ствол, ты знал?'],
         knock: ['Ой… привет. Я думала, это Костя с пятого.',
                 'У меня реферат не сохранился, свет вырубился. Ты же с компами дружишь?'],
         hacked: ['в /home/luda/диплом.txt: «квартира 54 — Мишка с седьмого, у него оружие»',
                  'в /home/luda/переписка.txt: «мишка@10.9.3.14 — не пиши ему, он псих»'] },
       { id: 'zina', f: 3, room: 1, name: 'Баба Зина', flatRole: 'старшая по подъезду',
+        chat: ['кто там? а, это ты, Санёк.', 'ключ от подвала у меня на гвоздике.', 'свет вернёшь — дам ключ.'],
         knock: ['Кто там?.. Санёк? Разбудил.',
                 'Ключ от подвала у меня, но я его на гвоздике держу. Спросишь — дам, если свет вернёшь.'],
         hacked: null },
@@ -585,6 +604,7 @@ const DEFAULT_CONFIG = {
                 'Собака у меня умная, а вот сосед с седьмого — нет. Держись от него подальше.'],
         hacked: null },
       { id: 'serega', f: 5, room: 0, name: 'Серёга', flatRole: 'слесарь', user: 'serega', ip: '10.9.3.55',
+        chat: ['о, Санёк. закурить есть?', 'в подвал без света не суйся, там Бабай.', 'Мишка мне триста должен, гад.'],
         knock: ['Санёк, братан! Есть закурить? Нет? Ну ладно.',
                 'Ты в подвал не лезь без света: там Бабай под лестницей сидит.'],
         hacked: ['в /home/serega/долги.txt: «Мишка, 54-я, должен мне 300 рублей и пистолет, гад»',
@@ -594,15 +614,18 @@ const DEFAULT_CONFIG = {
                 'Если увидишь моего Витю — он у соседа на восьмом, у них там приставка.'],
         hacked: null },
       { id: 'mishka', f: 7, room: 1, name: 'Мишка', flatRole: 'с пистолетом', user: 'mishka', ip: '10.9.3.14',
+        chat: ['чё надо.', 'ещё раз напишешь — приду.', 'на чердак не лазь.'],
         knock: ['Чё надо? Дверь моя — не лезь.', 'Ещё раз сунешься — поговорим по-другому.'],
         hacked: ['в /home/mishka/барыги.txt: «ствол под матрасом, патроны в носке»',
                  'в /home/mishka/долги.txt: «Серёге с пятого — 300, вернуть после зарплаты»'] },
       { id: 'vitya', f: 8, room: 5, name: 'Витя', flatRole: 'геймер', user: 'vitya', ip: '10.9.3.31',
+        chat: ['сейв побился, я в шоке.', 'дай доступ к роутеру, а?', 'в сети видел: tolya, luda, mishka, serega.'],
         knock: ['Санёк, ты?! У меня сейв побился, света же нет!',
                 'Слушай, у меня вайфай через твой роутер. Дай доступ, я тебе за это — что хочешь.'],
         hacked: ['в /home/vitya/сейвы.txt: «дата 12.11.1993 — не трогать»',
                  'в /home/vitya/логи.txt: «в сети: tolya, luda, mishka, serega, pasha»'] },
       { id: 'pasha', f: 9, room: 3, name: 'Паша', flatRole: 'сосед по площадке', user: 'pasha', ip: '10.9.3.93',
+        chat: ['здорово. тоже без света сидишь?', 'если нароешь что про Мишку — скажи.', 'на чердаке дверь заперта не просто так.'],
         knock: ['Здорово. Ты тоже без света сидишь?',
                 'Слышал, у тебя комп с модемом. Если что-то нароешь про Мишку — скажи.'],
         hacked: ['в /home/pasha/список.txt: «кто в доме: 11 tolya, 22 luda, 31 vitya, 55 serega, 93 pasha»',
@@ -643,6 +666,8 @@ const DEFAULT_CONFIG = {
     kettle: { title: 'ЧАЙНИК', lines: ['Эмалированный, с отбитой эмалью. Вода холодная.', 'Хочешь чаю — сначала верни свет.'] },
     mirror: { title: 'ЗЕРКАЛО', lines: ['Молодой парень в толстовке, глаза красные от монитора.', 'Волосы дыбом. Ну и ладно — ночь длинная.'] },
     plant: { title: 'ФИКУС', lines: ['Единственный, кто в этой квартире всегда доволен жизнью.', 'Поливать не забывай, говорит его вид.'] },
+    table: { title: 'СТОЛ', lines: ['Стол под скатертью, на нём — солонка и вчерашняя газета.', 'Газета за 12 ноября: «В доме на Таврической снова отключили свет».'] },
+    sofa: { title: 'ДИВАН', lines: ['Продавленный диван, пахнет пылью и кошкой.', 'Между подушками — монета и пульт без батареек.'] },
     carpet: { title: 'КОВЁР', lines: ['Ковёр на стене — как положено. Рисунок: олени и что-то геометрическое.', 'Лучшая звукоизоляция девяностых.'] },
     books: { title: 'КНИГИ', lines: ['«Паскаль для школьников», «Ремонт телевизоров», чей-то конспект.', 'В конспекте между страниц — конверт.'] },
     washer: { title: 'СТИРАЛЬНАЯ МАШИНА', lines: ['«Вятка-автомат». Внутри что-то стучит и перекатывается.', 'В барабане — горсть батареек и монета. Батарейки забираешь.'] },
@@ -652,6 +677,168 @@ const DEFAULT_CONFIG = {
     bike: { title: 'ВЕЛОСИПЕД', lines: ['«Салют» с восьмёркой на переднем колесе.', 'Кататься по подъезду — плохая идея.'] },
     atticDoor: { title: 'ДВЕРЬ НА ЧЕРДАК', lines: ['Железная, обита жестью. Навесной замок, и не один.', 'Из-за двери тянет холодом. Кто-то там ходит, но открыть нечем.'] },
     fusebox: { title: 'ЩИТОК', lockpick: false, lines: ['Старый щиток с тремя гнёздами под пробки.', 'Каждое гнездо — ступень света: подвал, лестница, весь дом.'] },
+  },
+
+  /* ══════════════════════════════════════════════════════════════════════
+     ИНТЕРЬЕРЫ: у каждой комнаты свой набор мебели и свои тексты.
+     fields: f — этаж, room — номер комнаты на плане, style — название стиля,
+     items[] — что стоит: kind, at (0..1 вдоль стены), w/h (размер в юнитах),
+     tall (не ставить под окном), layer (back/front), text[] — что видно при осмотре.
+     ══════════════════════════════════════════════════════════════════════ */
+  interior: {
+    /* размеры и «паспорт» каждого предмета — общие для всего дома */
+    catalog: {
+      bed: { w: 58, h: 24, tall: false },
+      sofa: { w: 60, h: 30, tall: false },
+      table: { w: 44, h: 28, tall: false },
+      chair: { w: 20, h: 28, tall: false },
+      desk: { w: 74, h: 30, tall: false },
+      wardrobe: { w: 34, h: 66, tall: true },
+      shelf: { w: 32, h: 52, tall: true },
+      books: { w: 26, h: 44, tall: true },
+      fridge: { w: 32, h: 66, tall: true },
+      stove: { w: 36, h: 46, tall: true },
+      kettle: { w: 12, h: 12, tall: false },
+      tv: { w: 30, h: 28, tall: false },
+      poster: { w: 42, h: 36, tall: false, wall: true },
+      carpet: { w: 96, h: 4, tall: false, wall: true },
+      mirror: { w: 22, h: 30, tall: false, wall: true },
+      phone: { w: 12, h: 14, tall: false, wall: true },
+      plant: { w: 16, h: 30, tall: false },
+      washer: { w: 34, h: 34, tall: true },
+    },
+    /* комнаты по адресам. Каждая со своим характером и своими текстами. */
+    rooms: [
+      { f: 1, room: 0, style: 'сантехник',
+        items: [
+          { kind: 'table', at: 0.18, text: ['Стол завален прокладками, паклей и обрезками труб.', 'В пепельнице — три окурка и шайба на 12.'] },
+          { kind: 'shelf', at: 0.82, text: ['Полка с инструментом: разводной, два вентиля и моток ФУМ-ленты.', 'На верхней — банка с гайками, подписанная «НЕ БРАТЬ».'] },
+          { kind: 'washer', at: 0.5, text: ['Стиральная машина соседа: внутри плещется вода.', 'Толя грозился её починить ещё в прошлом году.'] },
+        ] },
+      { f: 2, room: 3, style: 'студентка',
+        items: [
+          { kind: 'bed', at: 0.14, text: ['Кровать не заправлена, сверху — конспекты.', 'Под подушкой — плеер и кассета с надписью «для диплома».'] },
+          { kind: 'table', at: 0.52, text: ['Стол у окна: реферат, чашка, скомканные черновики.', 'На полях: «не забыть сохраниться!!!»'] },
+          { kind: 'books', at: 0.86, text: ['Учебники по экономике, между ними — Лукьяненко.', 'На форзаце подписано: «Люда, 2 курс, 1993».'] },
+        ] },
+      { f: 3, room: 1, style: 'бабушка',
+        items: [
+          { kind: 'bed', at: 0.12, text: ['Кровать под старым пледом в клетку.', 'На спинке — очки и молитвослов.'] },
+          { kind: 'wardrobe', at: 0.78, text: ['Комод с фотографиями в рамках: свадьба, море, кто-то в форме.', 'В нижнем ящике — пуговицы, нитки и ключ от подвала.'] },
+          { kind: 'tv', at: 0.44, text: ['«Рубин» с салфеткой на экране. Салфетка двигается от сквозняка.'] },
+          { kind: 'carpet', at: 0.56, text: ['Ковёр на стене — олени у водопоя.'] },
+        ] },
+      { f: 4, room: 1, style: 'собачник',
+        items: [
+          { kind: 'bed', at: 0.2, text: ['Кровать, рядом — собачья лежанка с клочьями шерсти.', 'Джек спит тут, когда не гоняет кота по подъезду.'] },
+          { kind: 'table', at: 0.62, text: ['Стол с поводком и банкой «Чаппи».', 'Над столом — расписание прогулок, написанное крупно.'] },
+          { kind: 'plant', at: 0.9, text: ['Фикус обглодан снизу. Виновник известен.'] },
+        ] },
+      { f: 5, room: 0, style: 'слесарь',
+        items: [
+          { kind: 'sofa', at: 0.16, text: ['Диван, на котором ночуют гости и сам Серёга.', 'Под подушкой — пачка «Примы» и зажигалка.'] },
+          { kind: 'table', at: 0.56, text: ['Стол с тисками и разобранным замком.', 'Рядом — отвёртка, обмотанная изолентой.'] },
+          { kind: 'shelf', at: 0.86, text: ['Полка: банки с болтами, «Техника молодёжи» за 88-й.', 'За книгами — початая бутылка «Столичной».'] },
+        ] },
+      { f: 6, room: 3, style: 'с детьми',
+        items: [
+          { kind: 'bed', at: 0.12, text: ['Детская кровать с мишкой на подушке.', 'Под кроватью — машинка без колёс.'] },
+          { kind: 'bed', at: 0.42, text: ['Вторая кровать, повыше: на ней спит старший.', 'На стене над ней — рисунок мелом: дом, солнце, дым.'] },
+          { kind: 'wardrobe', at: 0.84, text: ['Шкаф с детскими вещами, всё разложено по размерам.', 'На дверце — ростомер с засечками.'] },
+        ] },
+      { f: 7, room: 1, style: 'с пистолетом',
+        items: [
+          { kind: 'sofa', at: 0.18, text: ['Диван, продавленный по центру.', 'Под сиденьем — жестяная коробка, в ней патроны.'] },
+          { kind: 'table', at: 0.55, text: ['Стол: пепельница, бутылка пива, кобура без ремня.', 'В ящике — ключ на длинной цепочке.'] },
+          { kind: 'wardrobe', at: 0.86, text: ['Шкаф пахнет оружейным маслом.', 'На верхней полке — коробка из-под обуви, слишком тяжёлая для обуви.'] },
+        ] },
+      { f: 8, room: 5, style: 'геймер',
+        items: [
+          { kind: 'table', at: 0.2, text: ['Стол с приставкой и горой картриджей.', 'На самом верхнем — «Mortal Kombat» с подписанным ярлыком.'] },
+          { kind: 'tv', at: 0.44, text: ['Телевизор «Горизонт», к нему тянутся провода от приставки.', 'Экран показывает снег: света нет — приставка тоже умерла.'] },
+          { kind: 'sofa', at: 0.82, text: ['Диван, на нём — второй геймпад с обмотанным скотчем проводом.'] },
+        ] },
+      { f: 9, room: 3, style: 'сосед по площадке',
+        items: [
+          { kind: 'sofa', at: 0.16, text: ['Диван у стены, на нём — сложенное одеяло.', 'Паша говорит, что спит здесь, когда не может уснуть.'] },
+          { kind: 'shelf', at: 0.6, text: ['Полка с кассетами: «Наутилус», «Кино», сборники.'] },
+          { kind: 'carpet', at: 0.36, text: ['Ковёр с геометрическим узором, висит ровно.'] },
+        ] },
+      { f: 4, room: 5, style: 'медсестра',
+        items: [
+          { kind: 'bed', at: 0.14, text: ['Кровать заправлена по-больничному, углом.', 'На тумбочке — валидол и бинт.'] },
+          { kind: 'wardrobe', at: 0.8, text: ['Шкаф: белый халат, сменка, коробка с бинтами.', 'На дверце — список дежурств.'] },
+          { kind: 'table', at: 0.5, text: ['Стол с чашкой чая и книгой «Справочник медсестры».'] },
+        ] },
+      { f: 8, room: 0, style: 'таксист',
+        items: [
+          { kind: 'sofa', at: 0.2, text: ['Диван, на спинке — форменная куртка таксиста.', 'Рядом — термос и вязаная шапка.'] },
+          { kind: 'table', at: 0.58, text: ['Стол с картой города и путевыми листами.', 'На карте обведён квартал у вокзала.'] },
+          { kind: 'tv', at: 0.84, text: ['Телевизор бормочет на снегу — антенна отвалилась.'] },
+        ] },
+      { f: 6, room: 0, style: 'учительница',
+        items: [
+          { kind: 'table', at: 0.16, text: ['Стол с тетрадями и красной ручкой.', 'Сверху — стопка сочинений, подписанных «6-Б».'] },
+          { kind: 'books', at: 0.46, text: ['Книжная полка: Чехов, Пушкин, методичка по литературе.'] },
+          { kind: 'bed', at: 0.82, text: ['Кровать под клетчатым пледом, рядом тапки.', 'На подушке — очки в футляре.'] },
+        ] },
+    ],
+    /* комнаты без описания собираются из этих наборов — по хешу от этажа и номера,
+       поэтому одинаковых квартир не бывает */
+    styles: [
+      { name: 'холостяцкая', pool: [['sofa', 'table', 'tv'], ['bed', 'shelf', 'table'], ['sofa', 'fridge', 'table']] },
+      { name: 'семейная', pool: [['bed', 'wardrobe', 'tv'], ['bed', 'bed', 'wardrobe'], ['sofa', 'wardrobe', 'table']] },
+      { name: 'рабочая', pool: [['table', 'shelf', 'bed'], ['desk', 'shelf', 'chair'], ['table', 'books', 'sofa']] },
+    ],
+    /* уникальные «мелочи»: выбираются по хешу комнаты, поэтому у каждой квартиры свои */
+    details: {
+      bed: ['Заправлена, но подушка ещё хранит чью-то голову.', 'Одеяло сбито в ноги, простыня в цветочек.',
+        'На кровати лежит сложенная газета — кто-то читал перед сном.', 'Пружины скрипят, даже когда никто не садится.'],
+      wardrobe: ['Шкаф забит одеждой, на дверце висит галстук.', 'Внутри пахнет нафталином и старой обувью.',
+        'На антресолях — коробка с ёлочными игрушками.', 'Одна дверца скрипит, если её тронуть.'],
+      table: ['На столе — крошки, чашка и что-то из-под молока.', 'Скатерть в клетку, под ней выцарапано имя.',
+        'Стол шатается, под ножку подложен сложенный журнал.', 'На столе расписание автобусов с пометками.'],
+      sofa: ['Диван хранит запах кошки и пыли.', 'Под подушкой нашлась монета 1992 года.',
+        'Обивка протёрлась до поролона на подлокотнике.', 'На спинке висит плед, вылинявший до белого.'],
+      fridge: ['Холодильник молчит: света нет, мотор не работает.', 'На дверце магнитик из Сочи и список покупок.',
+        'Внутри — кастрюля, пакет молока и три яйца.', 'Морозилка в инее, а внутри всё равно тепло.'],
+      tl_dummy: [],
+    },
+  },
+
+  /* ══════════════ поведение соседей: кто выходит из квартиры ══════════════ */
+  npcs: {
+    /* обычный сосед выходит покурить на межэтажную площадку */
+    smoker: { id: 'serega', every: 260, smokeFor: 300, floor: 5 },
+    /* бандит изредка спускается на лестницу; его квартира тогда открыта */
+    bandit: { id: 'mishka', every: 300, outFor: 210 },
+    /* кто ещё иногда выходит в коридор / на площадку своего этажа */
+    roamers: ['tolya', 'luda', 'pasha', 'vitya', 'grisha'],
+    roamEvery: [60, 150],       // секунд между выходами
+    roamFor: [12, 34],          // сколько гуляет
+    walk: 44,                   // скорость шага по коридору
+  },
+
+  /* ══════════════ погода: проявления и сезоны ══════════════ */
+  weathers: {
+    /* p — сила проявления 0..1: от мороси до ливня */
+    variants: {
+      clear:  [{ p: 0.0, name: 'ясно' }, { p: 0.2, name: 'солнечно' }],
+      cloudy: [{ p: 0.35, name: 'облачно' }, { p: 0.62, name: 'пасмурно' }],
+      rain:   [{ p: 0.18, name: 'морось' }, { p: 0.5, name: 'дождь' }, { p: 0.92, name: 'ливень' }],
+      storm:  [{ p: 0.7, name: 'гроза' }, { p: 1.0, name: 'сильная гроза' }],
+      snow:   [{ p: 0.3, name: 'снежок' }, { p: 0.62, name: 'снег' }, { p: 0.95, name: 'метель' }],
+      fog:    [{ p: 0.3, name: 'дымка' }, { p: 0.7, name: 'туман' }],
+    },
+    season: {
+      spring: { clear: 3, cloudy: 3, rain: 4, storm: 1, snow: 0.2, fog: 1.5 },
+      summer: { clear: 5, cloudy: 2, rain: 3, storm: 2, snow: 0, fog: 0.5 },
+      autumn: { clear: 2, cloudy: 3, rain: 4, storm: 1, snow: 0.3, fog: 2 },
+      winter: { clear: 2, cloudy: 3, rain: 0, storm: 0.2, snow: 5, fog: 1 },
+    },
+    /* ночью ясного меньше, тумана больше */
+    night: { clear: 0.55, fog: 1.7, snow: 1.2 },
+    every: [90, 220],           // секунд между сменами погоды (авто)
   },
 
   /* ── терминал: подсказки и «сеть» дома ── */
@@ -694,6 +881,7 @@ function loadSettings() {
       if (typeof o.env.auto === 'boolean') CONFIG.env.auto = o.env.auto;
     }
     if (o.sprites && typeof o.sprites === 'object' && typeof o.sprites.player === 'string') CONFIG.sprites.player = o.sprites.player;
+    if (o.sprites && typeof o.sprites === 'object' && typeof o.sprites.hood === 'boolean') CONFIG.sprites.hood = o.sprites.hood;
     if (Array.isArray(o.layout) && o.layout.length) {
       const ok = o.layout.every((s) => (s.t === 'corr' || s.t === 'room') && Number.isFinite(s.w) && s.w > 40);
       if (ok) CONFIG.building.layout = o.layout.map((s) => ({ t: s.t, w: s.w }));
@@ -730,7 +918,7 @@ function saveSettings() {
       touch: CONFIG.ui.touch,
       hints: CONFIG.ui.hints,
       env: { time: CONFIG.env.time, season: CONFIG.env.season, weather: CONFIG.env.weather, auto: CONFIG.env.auto },
-      sprites: { player: CONFIG.sprites.player },
+      sprites: { player: CONFIG.sprites.player, hood: CONFIG.sprites.hood },
       layout: CONFIG.building.layout,
       doors: { lockedChance: CONFIG.doors.lockedChance, openChance: CONFIG.doors.openChance, overrides: CONFIG.doors.overrides },
       world: { itemDensity: CONFIG.world.itemDensity, enemyDensity: CONFIG.world.enemyDensity, hints: CONFIG.world.hints },
@@ -752,9 +940,14 @@ const SEASON = {
 };
 const TIME_NAME = { night: 'ночь', dawn: 'рассвет', day: 'день', dusk: 'закат' };
 const WEATHER_NAME = { clear: 'ясно', cloudy: 'облачно', rain: 'дождь', storm: 'гроза', snow: 'снег', fog: 'туман' };
-const HOODIE_NAME = { hoodie: 'толстовка', tracksuit: 'спортивка', varsity: 'бейсболка-куртка', bomber: 'бомбер' };
-const KEY_NAME = { red: 'красный', blue: 'синий', brass: 'латунный', green: 'зелёный' };
-const KEY_COLOR = { red: '#ff4d6a', blue: '#57a6ff', brass: '#ffcf6b', green: '#59d17a' };
+const HOODIE_NAME = {
+  hoodie: 'толстовка', tracksuit: 'спортивка', varsity: 'бейсболка-куртка', bomber: 'бомбер',
+  blackhoodie: 'чёрная толстовка', blackjacket: 'чёрная куртка',
+};
+/* у этих вещей есть капюшон — его можно надеть или снять */
+const HOOD_SPRITES = ['blackhoodie', 'blackjacket'];
+const KEY_NAME = { red: 'красный', blue: 'синий', brass: 'латунный', green: 'зелёный', attic: 'чердачный' };
+const KEY_COLOR = { red: '#ff4d6a', blue: '#57a6ff', brass: '#ffcf6b', green: '#59d17a', attic: '#b9b2a0' };
 
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -964,7 +1157,7 @@ const world = {
   floors: [], doors: [], items: [], props: [], npcs: [], enemies: [], rails: [],
   elevator: null, fuseBox: null, atticDoor: null,
   homeDoor: null, homeRooms: null, homeRoom: null, homeFlat: 93,
-  seed: 0, time: 0, clock: 22 * 60, weather: null, powerStage: 0, solids: [],
+  seed: 0, time: 0, clock: 22 * 60, weather: null, powerStage: 0, solids: [], smoke: [],
   known: [], story: { flags: new Set(), log: [] }, off: 0, dead: false,
 };
 
@@ -1020,22 +1213,76 @@ function addProp(o) {
 }
 function rectOf(x, y, w, h) { return { x, y: y - h, w, h }; }
 
-function furnishRoom(fl, seg, rng, home) {
-  const y = fl.y, x0 = seg.x + 22, x1 = seg.x2 - 22;
-  const put = (kind, w, h, at, extra) => {
-    const x = clamp(x0 + (x1 - x0 - w) * at, x0, x1 - w);
-    return addProp(Object.assign({ kind, f: fl.f, x, y, w, h }, extra));
-  };
-  if (home) return; /* своя квартира обставляется отдельно */
-  const n = 2 + (seg.w > 250 ? 1 : 0);
+/* окна комнаты — те же на всех этажах (дом строили по типовому проекту) */
+function windowSpans(seg) {
+  const n = seg.w > 240 ? 2 : 1;
+  const pos = n === 1 ? [0.5] : [0.32, 0.7];
+  const out = [];
   for (let i = 0; i < n; i++) {
-    const at = (i + 0.5) / n;
-    const r = rng();
-    if (r < 0.3) put('bed', 58, 24, at);
-    else if (r < 0.52) put('wardrobe', 34, 66, at);
-    else if (r < 0.72) put('sofa', 60, 30, at);
-    else if (r < 0.88) put('table', 44, 28, at);
-    else put('shelf', 32, 52, at);
+    const cx = seg.x + seg.w * pos[i];
+    out.push([cx - 34, cx + 34]);   /* само окно + отступ, чтобы шкаф не вставал к стеклу */
+  }
+  return out;
+}
+/* место вдоль стены: высокую мебель не ставим под окном, а сдвигаем к простенку */
+function placeAlong(seg, w, at, taken, tall) {
+  const pad = 18;
+  const x0 = seg.x + pad, x1 = seg.x2 - pad - w, hi = Math.max(x0, x1);
+  const want = clamp(x0 + Math.max(0, x1 - x0) * clamp(at, 0, 1), x0, hi);
+  /* под окнами не ставим только высокое (шкаф, холодильник, полка): стол или кровать под стеклом — норма */
+  const blocks = tall ? windowSpans(seg).slice() : [];
+  for (const t of (taken || [])) blocks.push([t[0] - 6, t[1] + 6]);
+  /* свободно = внутри комнаты И не под окном, И не поверх уже поставленного */
+  const free = (x) => x >= x0 - 0.01 && x <= hi + 0.01 && !blocks.some(([a, b]) => x < b && x + w > a);
+  if (free(want)) return want;
+  for (let step = 6; step <= seg.w; step += 6) {
+    const a = clamp(want - step, x0, hi), b = clamp(want + step, x0, hi);
+    if (free(a)) return a;
+    if (free(b)) return b;
+  }
+  /* места нет — предмет в этой комнате не ставим (лучше пусто, чем мебель друг в друге) */
+  return null;
+}
+/* мелочь-описание: выбирается по хешу комнаты — у каждой квартиры текст свой */
+function roomDetail(kind, f, room) {
+  const pool = CONFIG.interior.details[kind];
+  if (!pool || !pool.length) return null;
+  const r = makeRng(hashSeed(world.seed, f, room, kind.length, 17));
+  return [pool[Math.floor(r() * pool.length)]];
+}
+/* план комнаты: либо описан в CONFIG.interior.rooms, либо собирается по стилю */
+function roomPlan(fl, seg) {
+  const I = CONFIG.interior;
+  const hit = I.rooms.find((r) => r.f === fl.f && r.room === seg.idx);
+  if (hit) return hit;
+  const rng = makeRng(hashSeed(world.seed, fl.f, seg.idx, 5, 91));
+  const st = I.styles[Math.floor(rng() * I.styles.length)];
+  const set = st.pool[Math.floor(rng() * st.pool.length)];
+  return { f: fl.f, room: seg.idx, style: st.name, items: set.map((kind, i) => ({ kind, at: (i + 1) / (set.length + 1) })) };
+}
+function furnishRoom(fl, seg, rng, home) {
+  if (home) return; /* своя квартира обставляется отдельно */
+  const y = fl.y;
+  const plan = roomPlan(fl, seg);
+  const I = CONFIG.interior;
+  const taken = [];
+  for (const it of plan.items) {
+    const cat = I.catalog[it.kind] || { w: 34, h: 30, tall: false };
+    const w = it.w || cat.w, h = it.h || cat.h;
+    const wall = !!cat.wall;
+    /* настенное — висит выше мебели: место на полу не занимает и от окон не отодвигается */
+    const x = wall
+      ? clamp(seg.x + 18 + Math.max(0, seg.w - 36 - w) * clamp(it.at === undefined ? 0.5 : it.at, 0, 1), seg.x + 10, seg.x2 - 10 - w)
+      : placeAlong(seg, w, it.at === undefined ? 0.5 : it.at, taken, cat.tall === true);
+    if (x === null) continue;
+    if (!wall) taken.push([x, x + w]);
+    addProp({
+      kind: it.kind, f: fl.f, x, y: wall ? y - 44 : y, w, h,
+      solid: cat.tall !== false,
+      layer: wall ? 'back' : (it.layer || 'back'),
+      lines: it.text || roomDetail(it.kind, fl.f, seg.idx) || null,
+      room: seg.idx, style: plan.style, home: false,
+    });
   }
 }
 
@@ -1062,11 +1309,14 @@ function buildHome(fl) {
   if (kitchen) {
     addProp({ kind: 'stove', f: fl.f, x: kitchen.x + 20, y: Y0, w: 36, h: 46, solid: true, home: true });
     addProp({ kind: 'kettle', f: fl.f, x: kitchen.x + 26, y: Y0 - 46, w: 12, h: 12, solid: false, home: true, layer: 'front' });
-    addProp({ kind: 'fridge', f: fl.f, x: kitchen.x + 66, y: Y0, w: 32, h: 66, solid: true, home: true });
+    /* холодильник, телевизор и шкафчик — правее окна (окно на кухне 569..621), к стеклу не лепим */
+    addProp({ kind: 'fridge', f: fl.f, x: kitchen.x + 130, y: Y0, w: 32, h: 66, solid: true, home: true });
     addProp({ kind: 'table', f: fl.f, x: kitchen.x2 - 62, y: Y0, w: 42, h: 30, solid: true, home: true });
-    addProp({ kind: 'tv', f: fl.f, x: kitchen.x + 108, y: Y0, w: 30, h: 28, solid: false, home: true, layer: 'front' });
+    addProp({ kind: 'tv', f: fl.f, x: kitchen.x + 194, y: Y0, w: 30, h: 28, solid: false, home: true, layer: 'front' });
     addProp({ kind: 'phone', f: fl.f, x: kitchen.x2 - 26, y: Y0 - 34, w: 12, h: 14, solid: false, home: true, layer: 'front' });
-    addProp({ kind: 'wardrobe', f: fl.f, x: kitchen.x2 - 124, y: Y0, w: 14, h: 60, solid: false, home: true, layer: 'back' });
+    /* узкий шкафчик — между телевизором и окном, не под стеклом */
+    /* узкий стенной шкафчик — в простенке между плитой и окном */
+    addProp({ kind: 'wardrobe', f: fl.f, x: kitchen.x + 56, y: Y0, w: 14, h: 60, solid: false, home: true, layer: 'back' });
   }
   world.homeRoom = { x1: living.x + 8, x2: living.x2 - 8 };
   world.homeRooms = { living: { x1: living.x, x2: living.x2 }, kitchen: kitchen ? { x1: kitchen.x, x2: kitchen.x2 } : null };
@@ -1096,7 +1346,38 @@ function buildRoof(fl) {
 /* ── погода / время ── */
 function makeWeather(seed) {
   const rng = makeRng(seed ^ 0x51ed270b);
-  return { kind: CONFIG.env.weather, intensity: 0.6 + rng() * 0.4, wind: 0.2 + rng() * 0.6, t: 0, bolt: 0, boltT: 6 };
+  const kind = CONFIG.env.weather;
+  const vars = (CONFIG.weathers.variants[kind] || [{ p: 0.5, name: kind }]);
+  const v = vars[Math.floor(rng() * vars.length)];
+  return {
+    kind, power: v.p, name: v.name, variant: vars.indexOf(v),
+    intensity: 0.35 + v.p * 0.65, wind: 0.2 + rng() * 0.6 * (0.4 + v.p),
+    t: 0, bolt: 0, boltT: 6, autoT: 20 + rng() * 60,
+  };
+}
+/* новая погода: сезон + время суток + немного случайности */
+function rollWeather() {
+  const W = CONFIG.weathers, w = world.weather;
+  if (!w) return;
+  const time = CONFIG.env.time;
+  const table = Object.assign({}, W.season[CONFIG.env.season] || W.season.autumn);
+  if (time === 'night' || time === 'dusk') {
+    for (const k of Object.keys(W.night)) if (table[k]) table[k] *= W.night[k];
+  }
+  if (time === 'day') table.fog = (table.fog || 0) * 0.6;
+  const total = Object.keys(table).reduce((a, k) => a + table[k], 0) || 1;
+  let r = Math.random() * total, kind = 'cloudy';
+  for (const k of Object.keys(table)) { r -= table[k]; if (r <= 0) { kind = k; break; } }
+  const vars = W.variants[kind] || [{ p: 0.5, name: kind }];
+  const v = vars[Math.floor(Math.random() * vars.length)];
+  w.kind = kind; w.power = v.p; w.name = v.name; w.variant = vars.indexOf(v);
+  w.intensity = 0.35 + v.p * 0.65;
+  w.wind = 0.15 + Math.random() * 0.75 * (0.4 + v.p);
+  w.boltT = 4 + Math.random() * 10;
+  const gap = CONFIG.weathers.every;
+  w.autoT = gap[0] + Math.random() * (gap[1] - gap[0]);
+  CONFIG.env.weather = kind;
+  if (CONFIG.ui.hints) toast('Погода: ' + v.name);
 }
 const SKY = {
   night: { top: '#05050f', bot: '#151a33', glow: '#20264d', star: 1, sun: 0 },
@@ -1149,7 +1430,7 @@ function buildWorld(seed) {
   world.midEnd = world.W - 12;
 
   world.floors = []; world.doors = []; world.items = []; world.props = [];
-  world.npcs = []; world.enemies = []; world.rails = []; world.solids = [];
+  world.npcs = []; world.enemies = []; world.rails = []; world.solids = []; world.smoke = [];
   world.powerStage = 0; world.time = 0; world.clock = 22 * 60; world.won = false;
   world.weather = makeWeather(seed);
   world.known = []; world.story = { flags: new Set(), log: [] };
@@ -1284,6 +1565,7 @@ function buildWorld(seed) {
   }
   buildBasement(world.floors[0]);
   buildRoof(world.floors[world.N + 1]);
+  fixPropsByWindows();
 
   /* ── лестница: марш A → площадка → марш B ── */
   const half = world.pitch / 2;
@@ -1323,6 +1605,28 @@ function buildWorld(seed) {
   /* ── коллизии ── */
   buildSolids();
   return world;
+}
+
+/** Высокая мебель не должна стоять под окном: сдвигаем к простенку (своя квартира тоже). */
+function fixPropsByWindows() {
+  const tallKinds = { wardrobe: 1, fridge: 1, shelf: 1, books: 1, washer: 1, stove: 1 };
+  for (const fl of world.floors) {
+    if (!fl.segs || !fl.segs.length) continue;
+    for (const p of world.props) {
+      if (p.f !== fl.f) continue;
+      if (!tallKinds[p.kind]) continue;
+      const seg = fl.segs.find((s) => p.x + p.w / 2 >= s.x && p.x + p.w / 2 <= s.x2);
+      if (!seg) continue;
+      const blocks = windowSpans(seg);
+      const clash = blocks.some(([a, b]) => p.x < b && p.x + p.w > a);
+      if (!clash) continue;
+      /* все соседи по стене: placeAlong сам проверит, с чем предмет реально пересекается */
+      const others = world.props.filter((q) => q !== p && q.f === p.f && Math.abs(q.y - p.y) < 40)
+        .map((q) => [q.x, q.x + q.w]);
+      const nx = placeAlong(seg, p.w, (p.x - seg.x) / Math.max(1, seg.w), others, true);
+      if (nx !== null) p.x = nx;
+    }
+  }
 }
 
 function addItem(type, f, x, y, extra) {
@@ -1438,6 +1742,8 @@ function assignNeighbors(seed, homeF) {
         id: p.id, name: p.name, role: p.flatRole, f: p.f, room: seg.idx,
         x: seg.x + seg.w * 0.6, y: floorBaseY(p.f), user: p.user || null, ip: p.ip || null,
         doorId: door ? door.id : null, said: 0, inside: true, t: Math.random() * 4,
+        homeF: p.f, homeX: seg.x + seg.w * 0.6, mode: 'home', timer: 6 + Math.random() * 50,
+        dir: 1, walk: 0, path: null, pi: 0,
       });
     }
   }
@@ -1468,6 +1774,10 @@ function spawnEnemies(seed, homeF) {
   /* Мишка с пистолетом — в своей квартире */
   const mishka = world.npcs.find((n) => n.id === 'mishka');
   if (mishka) {
+    /* ключ от чердака лежит у Мишки — забрать можно, пока он на лестнице */
+    addItem('key', mishka.f, mishka.homeX + 40, floorBaseY(mishka.f) - 9, {
+      key: 'attic', door: -1, label: 'чердачный ключ', secret: true,
+    });
     const c = CONFIG.enemies.bandit;
     world.enemies.push({
       type: 'bandit', f: mishka.f, x: mishka.x + 40, y: floorBaseY(mishka.f), vx: 0, vy: 0, dir: -1,
@@ -1499,7 +1809,7 @@ function buildSolids() {
 /* ────────────────────────────── E. ИГРОК ─────────────────────────────────── */
 const player = {
   x: 120, y: 0, vx: 0, vy: 0, dir: -1, onGround: true, floor: 9,
-  rail: null, s: 0, railLock: 0, coyote: 0, jumpBuf: 0,
+  rail: null, s: 0, railLock: 0, coyote: 0, jumpBuf: 0, slide: false,
   nerves: 3, invuln: 0, torch: true, battery: 100,
   fuses: 0, picks: 1, keys: [],
   seated: false, seatLock: 0, riding: false, dead: false, deadT: 0,
@@ -1515,7 +1825,7 @@ function placePlayer(f, x, keepSeat) {
   player.x = clamp(Number(x) || 60, 10, world.W - 20);
   player.vx = 0; player.vy = 0;
   player.rail = null; player.riding = false; player.onGround = true; player.dead = false;
-  player.railLock = 0; player.coyote = 0;
+  player.railLock = 0; player.coyote = 0; player.slide = false;
   if (!keepSeat) player.seated = false;
   player.upLock = false; player.downLock = false;
 }
@@ -1585,7 +1895,7 @@ function attachRail(f, s, dir) {
   player.rail = rail; player.s = clamp(s, 0, rail.len);
   const p = railPoint(rail, player.s);
   player.x = p.x; player.y = p.y; player.vx = 0; player.vy = 0;
-  player.onGround = true; player.riding = false; player.seated = false;
+  player.onGround = true; player.riding = false; player.seated = false; player.slide = false;
   player.floor = Math.round(floorOfY(player.y));
   if (dir) player.dir = dir;
   SFX.step();
@@ -1601,7 +1911,21 @@ function stepRail(dt) {
   if (inputs.down) dir -= 1;
   if (inputs.right) dir += segDir;
   if (inputs.left) dir -= segDir;
-  dir = sign(dir);
+  /* v6 п.2: без нажатой кнопки dir = 0 — иначе sign(0) = 1 и герой сам ползёт вверх */
+  dir = dir > 0 ? 1 : dir < 0 ? -1 : 0;
+  /* скольжение по перилам: держишь [Скользить] — едешь вниз, отпустил — замер там, где есть */
+  if (player.slide) {
+    if (inputs.act) {
+      player.s -= CONFIG.building.stair.slideSpeed * dt;
+      player.anim += dt * 14;
+      player.dir = 1;
+      if (Math.floor(player.anim) !== player.steps) {
+        player.steps = Math.floor(player.anim);
+        if (player.steps % 2 === 0) SFX.step();
+      }
+      dir = 0;
+    } else player.slide = false;
+  }
   if (dir !== 0) {
     player.dir = (seg.q.x - seg.p.x) * dir >= 0 ? 1 : -1;
     player.s += dir * CONFIG.building.stair.speed * dt;
@@ -1611,12 +1935,12 @@ function stepRail(dt) {
   }
   if (player.s <= 0.5) {
     const f = rail.f;
-    player.rail = null; player.railLock = 0.25; player.downLock = true;
+    player.rail = null; player.railLock = 0.25; player.downLock = true; player.slide = false;
     player.x = world.sa; player.y = floorBaseY(f); player.floor = f;
     player.vx = 0; player.vy = 0; player.onGround = true;
   } else if (player.s >= rail.len - 0.5) {
     const f = rail.f + 1;
-    player.rail = null; player.railLock = 0.25; player.upLock = true;
+    player.rail = null; player.railLock = 0.25; player.upLock = true; player.slide = false;
     player.x = world.sa; player.y = floorBaseY(f); player.floor = f;
     player.vx = 0; player.vy = 0; player.onGround = true;
   } else {
@@ -1830,7 +2154,7 @@ function hurtPlayer(amount, fromX) {
 const panel = { open: false, sel: 1, t: 0 };
 const bubbles = [];
 const bullets = [];
-const term = { open: false, out: [], hist: [], hi: -1, busy: false };
+const term = { open: false, out: [], hist: [], hi: -1, busy: false, net: null };
 
 function say(text, ms) {
   bubbles.push({ text: String(text), t: 0, life: (ms || 3400) / 1000 });
@@ -1865,7 +2189,16 @@ function doorIsHacked(d) { return !!(d.owner && world.story.flags.has('hacked:' 
 
 function openDoor(d, silent) {
   if (!d) return false;
-  if (d.state === 'bolted') { SFX.locked(); say('Заперто наглухо. Даже не дёргается.'); return false; }
+  if (d.state === 'bolted') {
+    if (player.keys.includes('attic')) {
+      player.keys = player.keys.filter((k) => k !== 'attic');
+      d.state = 'closed'; d.picked = true;
+      SFX.key(); say('Чердачный ключ подошёл. Замок сухо щёлкнул.');
+      storyAdd('Дверь на чердак открыта.', 'attic');
+      return true;
+    }
+    SFX.locked(); say('Заперто наглухо. Даже не дёргается. Нужен чердачный ключ.'); return false;
+  }
   if (d.state === 'locked') {
     if (d.key && player.keys.includes(d.key)) {
       player.keys = player.keys.filter((k) => k !== d.key);
@@ -1955,8 +2288,9 @@ function addKnown(p) {
 /* ── взаимодействие с предметами ── */
 function propText(kind, p) {
   const cfg = CONFIG.interactions[kind];
-  if (!cfg) return { title: 'ПРЕДМЕТ', lines: ['Ничего особенного.'] };
-  return { title: cfg.title || kind.toUpperCase(), lines: cfg.lines || [] };
+  const own = p && p.lines && p.lines.length ? p.lines : null;   /* у комнаты свой текст */
+  if (!cfg) return { title: 'ПРЕДМЕТ', lines: own || ['Ничего особенного.'] };
+  return { title: cfg.title || kind.toUpperCase(), lines: (cfg.lines || []).concat(own || []) };
 }
 function useProp(p) {
   if (!p) return;
@@ -2038,7 +2372,8 @@ function liftNearby() {
     const fy = floorBaseY(player.floor);
     if (Math.abs(player.y - fy) > 30) return false;
   }
-  return player.x > E.x - 46 && player.x < E.x2 + 46 && Math.abs(player.y - floorBaseY(player.floor)) < 40;
+  /* кнопка вызова висит слева от шахты — подход с той стороны тоже считается */
+  return player.x > E.x - 58 && player.x < E.x2 + 46 && Math.abs(player.y - floorBaseY(player.floor)) < 40;
 }
 function liftHere() { return Math.abs(world.elevator.carY - floorBaseY(player.floor)) < 8; }
 function liftAction() {
@@ -2046,8 +2381,12 @@ function liftAction() {
   if (!E) return;
   if (world.powerStage < 2) { SFX.locked(); say('Лифт мёртв. Нужны две пробки в щитке.'); return; }
   if (player.riding) {
-    if (E.state === 'open') { if (liftHere()) { liftExit(); } else { panel.open = !panel.open; SFX.click(); } }
-    else { panel.open = !panel.open; SFX.click(); }
+    if (panel.open) { confirmFloor(); return; }        /* [Поехали] — едем на выбранный этаж */
+    /* v6 п.14: панель закрыта, кабина на месте — кнопка [Выйти из лифта] */
+    if (liftHere() && E.state === 'open') { liftExit(); return; }
+    panel.open = !panel.open;
+    if (panel.open) panel.sel = clamp(player.floor, 0, world.N);
+    SFX.click();
     return;
   }
   if (!liftNearby()) return;
@@ -2131,6 +2470,257 @@ function updateDoors(dt) {
   }
   if (world.fuseBox) world.fuseBox.spark = Math.max(0, world.fuseBox.spark - dt * 2);
   /* закрываем двери за игроком? нет — пусть остаются как есть */
+}
+
+/* ─────────────────────────── СОСЕДИ ХОДЯТ ──────────────────────────────────
+   Обычные соседи изредка выходят в коридор и на площадку, курильщик стоит
+   у окна на межэтажном марше, бандит спускается на лестницу — и тогда
+   его квартира открыта. */
+const randRange = (a) => a[0] + Math.random() * (a[1] - a[0]);
+
+function npcDoor(n) {
+  if (n.doorId === null || n.doorId === undefined) return null;
+  return world.doors[n.doorId] || null;
+}
+function npcSetDoor(n, open) {
+  const d = npcDoor(n);
+  if (!d) return;
+  if (open) { if (d.state !== 'open') { d.state = 'open'; d.anim = 1; } }
+  else if (d.state === 'open') { d.state = 'closed'; }
+}
+/* путь по лестнице: с этажа fFrom (в точке x0) до этажа fTo (в точке x1) */
+function stairPath(fFrom, fTo, x0, x1) {
+  const pts = [{ x: x0, y: floorBaseY(fFrom) }];
+  pts.push({ x: world.sa + 8, y: floorBaseY(fFrom) });
+  const down = fTo < fFrom;
+  let f = down ? fFrom - 1 : fFrom;
+  while (down ? f >= fTo : f <= fTo) {
+    const r = world.rails[f];
+    if (r) {
+      const steps = 8;
+      for (let i = 1; i <= steps; i++) {
+        const t = i / steps;
+        const pt = railPoint(r, down ? r.len * (1 - t) : r.len * t);
+        pts.push({ x: pt.x, y: pt.y });
+      }
+      pts.push({ x: world.sa + 8, y: floorBaseY(down ? f : f + 1) });
+    }
+    f += down ? -1 : 1;
+  }
+  pts.push({ x: x1, y: floorBaseY(fTo) });
+  return pts;
+}
+function npcWalkPath(n, dt, speed) {
+  if (!n.path || n.pi >= n.path.length) return true;
+  const p = n.path[n.pi];
+  const dx = p.x - n.x, dy = p.y - n.y;
+  const d = Math.hypot(dx, dy);
+  const step = speed * dt;
+  if (d <= step) { n.x = p.x; n.y = p.y; n.pi++; return n.pi >= n.path.length; }
+  n.x += (dx / d) * step;
+  n.y += (dy / d) * step;
+  if (Math.abs(dx) > 0.2) n.dir = dx > 0 ? 1 : -1;
+  n.walk = (n.walk || 0) + dt * 9;
+  return false;
+}
+function addSmoke(n, big) {
+  const cx = n.x + 6 * (n.dir || 1), cy = n.y - 31;
+  world.smoke.push({ x: cx, y: cy, t: 0, life: big ? 3.4 : 2.4, r: big ? 3.4 : 1.9, drift: (Math.random() - 0.5) * 8 });
+  if (world.smoke.length > 90) world.smoke.shift();
+}
+function updateSmoker(n, dt) {
+  const C = CONFIG.npcs.smoker;
+  if (!C) return;
+  const homeF = n.homeF, y0 = floorBaseY(homeF);
+  const midFloor = C.floor - 1;
+  const midY = floorBaseY(midFloor) - world.pitch / 2;
+  const spot = { x: world.midEnd - 74, y: midY };
+  n.timer = (n.timer === undefined ? 30 + Math.random() * 60 : n.timer) - dt;
+  if (n.mode === 'home') {
+    n.x = n.homeX; n.y = y0;
+    if (n.timer <= 0) {
+      n.mode = 'out'; n.smokeT = 0; n.puffT = 1.4; n.cigT = 0;
+      const d = npcDoor(n);
+      /* из квартиры — на марш, вниз до межэтажной площадки, потом к окну */
+      const r = world.rails[midFloor];
+      const path = [{ x: d ? d.x - 24 : n.homeX, y: y0 }, { x: world.sa + 8, y: y0 }];
+      if (r) for (let i = 1; i <= 8; i++) { const pt = railPoint(r, r.len * (1 - i / 16)); path.push({ x: pt.x, y: pt.y }); }
+      path.push({ x: world.sb + 22, y: midY }, { x: spot.x, y: midY });
+      n.path = path; n.pi = 0;
+      n.outPath = path.slice();
+      npcSetDoor(n, true);
+      n.timer = C.smokeFor;
+    }
+    return;
+  }
+  if (n.mode === 'out') {
+    const done = npcWalkPath(n, dt, CONFIG.npcs.walk);
+    if (done) {
+      /* стоит у окна, курит: дымок от сигареты и от дыхания */
+      n.dir = 1; n.smoking = true;
+      n.smokeT = (n.smokeT || 0) + dt;
+      n.cigT = (n.cigT || 0) + dt;
+      n.puffT = (n.puffT || 1) - dt;
+      n.x = spot.x; n.y = midY;
+      if (n.cigT > 0.16) { n.cigT = 0; addSmoke(n, false); }
+      if (n.puffT <= 0) { n.puffT = 2.4 + Math.random() * 2.8; addSmoke(n, true); }
+      n.timer -= dt;
+      if (n.timer <= 0) {
+        n.mode = 'back';
+        n.path = (n.outPath || []).slice().reverse();
+        n.pi = 0; n.timer = 0;
+      }
+    }
+    return;
+  }
+  if (n.mode === 'back') {
+    n.smoking = false;
+    const done = npcWalkPath(n, dt, CONFIG.npcs.walk);
+    if (done) { n.mode = 'home'; n.timer = C.every * (0.7 + Math.random() * 0.6); npcSetDoor(n, false); }
+  }
+}
+/* куда ведёт дверь: комната по одну сторону проёма (внутрь квартиры) и коридор — по другую */
+function roomAtDoor(d) {
+  const fl = world.floors[d.f];
+  if (!fl) return null;
+  for (const s of fl.segs) {
+    if (s.t !== 'room') continue;
+    if (Math.abs(d.x - s.x) < 3 || Math.abs(d.x - s.x2) < 3) return s;
+  }
+  return null;
+}
+function updateRoamer(n, dt) {
+  const C = CONFIG.npcs;
+  if (!C.roamers.includes(n.id)) return;
+  const y0 = floorBaseY(n.homeF);
+  if (n.mode !== 'out') {
+    n.x = n.homeX; n.y = y0;
+    n.timer = (n.timer === undefined ? randRange(C.roamEvery) : n.timer) - dt;
+    if (n.timer <= 0) {
+      n.mode = 'out';
+      n.timer = randRange(C.roamFor);
+      const fl = world.floors[n.homeF];
+      const d = npcDoor(n);
+      const x0 = d ? d.x - 22 : n.homeX;
+      const corr = fl.segs.filter((s) => s.t === 'corr')[0];
+      const land = { x: world.xs + 60, y: y0 };
+      const r = Math.random();
+      n.stair = false; n.nearDoor = null;
+      if (r < 0.32 && n.homeF > 0 && world.rails[n.homeF - 1]) {
+        /* изредка спускается на марш — постоять у окна межэтажки */
+        n.stair = true;
+        n.stairF = n.homeF - 1;
+        n.path = [{ x: n.homeX, y: y0 }].concat(stairPath(n.homeF, n.stairF, x0, world.sa + 34));
+        n.pi = 0;
+      } else {
+        /* иногда заходит в открытую соседнюю квартиру, иначе — коридор или площадка */
+        const openDoor = world.doors.find((q) => q.f === n.homeF && q.kind === 'flat' && !q.isHome &&
+          q.state === 'open' && d && Math.abs(q.x - d.x) > 40);
+        const room = r < 0.55 && openDoor ? roomAtDoor(openDoor) : null;
+        let target;
+        if (room) {
+          n.nearDoor = openDoor;
+          const cx = (room.x + room.x2) / 2;
+          target = { x: clamp(openDoor.x + (cx > openDoor.x ? 64 : -64), room.x + 24, room.x2 - 24), y: y0 };
+        } else if (r < 0.78 && corr) {
+          target = { x: corr.x + 30 + Math.random() * Math.max(20, corr.w - 60), y: y0 };
+        } else target = land;
+        n.path = [{ x: n.homeX, y: y0 }, { x: x0, y: y0 }, { x: target.x, y: y0 }];
+        n.pi = 0;
+      }
+      npcSetDoor(n, true);
+      if (n.nearDoor && n.nearDoor.state === 'closed') n.nearDoor = null;
+    }
+    return;
+  }
+  npcWalkPath(n, dt, C.walk);
+  if (n.pathDone === undefined || !n.path || n.pi >= n.path.length) n.pathDone = true;
+  n.timer -= dt;
+  if (n.timer <= 0 || (n.pathDone && Math.random() < dt * 0.12)) {
+    n.pathDone = false;
+    const d = npcDoor(n);
+    const back = (n.path || []).slice().reverse();
+    if (n.stair && back.length) back.push({ x: n.homeX, y: y0 });
+    n.path = n.stair ? back : [{ x: d ? d.x - 22 : n.homeX, y: y0 }, { x: n.homeX, y: y0 }];
+    n.pi = 0;
+    n.mode = 'back';
+  }
+}
+function updateRoamBack(n, dt) {
+  const done = npcWalkPath(n, dt, CONFIG.npcs.walk);
+  if (done) {
+    n.mode = 'home'; n.timer = randRange(CONFIG.npcs.roamEvery);
+    n.stair = false; n.nearDoor = null;
+    npcSetDoor(n, false);
+  }
+}
+function updateNpcs(dt) {
+  for (const n of world.npcs) {
+    n.t = (n.t || 0) + dt;
+    if (CONFIG.npcs.smoker && n.id === CONFIG.npcs.smoker.id) { updateSmoker(n, dt); continue; }
+    if (CONFIG.npcs.roamers.includes(n.id)) {
+      if (n.mode === 'out') updateRoamer(n, dt);
+      else if (n.mode === 'back') updateRoamBack(n, dt);
+      else updateRoamer(n, dt);
+    }
+  }
+  /* дым */
+  for (let i = world.smoke.length - 1; i >= 0; i--) {
+    const s = world.smoke[i];
+    s.t += dt;
+    s.y -= dt * (6 + s.r);
+    s.x += s.drift * dt + Math.sin(s.t * 2 + s.y * 0.1) * 0.16;
+    s.r += dt * 1.1;
+    if (s.t >= s.life) world.smoke.splice(i, 1);
+  }
+  /* бандит уходит на лестницу — и тогда его квартира открыта */
+  updateBanditOuting(dt);
+}
+
+/* бандит: изредка спускается на лестницу, квартира остаётся открытой */
+function updateBanditOuting(dt) {
+  const C = CONFIG.npcs.bandit;
+  const e = world.enemies.find((z) => z.type === 'bandit' && !z.calm);
+  if (!C || !e) return;
+  const n = world.npcs.find((z) => z.id === C.id);
+  if (!n) return;
+  e.modeT = (e.modeT === undefined ? C.every * 0.5 : e.modeT) - dt;
+  if (!e.outing) {
+    e.f = n.homeF; e.x = n.homeX + 40; e.y = floorBaseY(n.homeF);
+    if (e.modeT <= 0) {
+      e.outing = true; e.modeT = C.outFor;
+      e.outF = Math.floor(Math.random() * 4);           /* уходит на 0..3 этаж */
+      const d = npcDoor(n);
+      e.path = stairPath(n.homeF, e.outF, d ? d.x - 24 : n.homeX, world.sa + 34);
+      e.pi = 0;
+      npcSetDoor(n, true);
+      n.mode = 'out';
+    }
+    return;
+  }
+  if (e.path && e.pi < e.path.length) {
+    npcWalkPath(e, dt, CONFIG.npcs.walk * 1.5);
+    e.f = clamp(Math.round(floorOfY(e.y)), 0, world.N);
+    e.dir = -1;
+    return;
+  }
+  if (e.returning) {
+    e.returning = false;
+    e.path = null;
+    e.f = n.homeF; e.x = n.homeX + 40; e.y = floorBaseY(n.homeF);
+    return;
+  }
+  e.y = floorBaseY(e.outF); e.x = world.sa + 34; e.f = e.outF;
+  e.modeT -= dt;
+  if (e.modeT <= 0) {
+    e.outing = false; e.modeT = C.every * (0.8 + Math.random() * 0.6);
+    e.path = (e.path || []).slice().reverse();
+    if (!e.path.length) e.path = stairPath(e.outF, n.homeF, world.sa + 34, n.homeX + 30);
+    e.pi = 0;
+    e.returning = true;
+    npcSetDoor(n, false);
+    n.mode = 'home';
+  }
 }
 
 /* ── враги ── */
@@ -2236,7 +2826,7 @@ function talkNpc(n) {
    и свой приоритет-эпсилон. Отошёл на шаг — активным становится соседний объект.
    Раньше ПК/полка жёстко перебивали всё вокруг, из-за чего нельзя было взять
    отмычку со стола и открыть дверь рядом с полкой. */
-const ACT_EPS = { item: 0, door: 2.5, seat: 3, npc: 3.5, pc: 4, prop: 6, fusebox: 2, lift: 8 };
+const ACT_EPS = { item: 0, door: 2.5, seat: 3, npc: 3.5, pc: 4, slide: 3, prop: 6, fusebox: 2, lift: 8 };
 
 function actionCandidates() {
   const pf = player.floor;
@@ -2254,7 +2844,7 @@ function actionCandidates() {
     const locked = d.state === 'locked';
     const bolted = d.state === 'bolted';
     let label;
-    if (bolted) label = 'Дверь на чердак (заперта)';
+    if (bolted) label = player.keys.includes('attic') ? 'Открыть чердак ключом' : 'Дверь на чердак (заперта)';
     else if (locked) label = d.key && player.keys.includes(d.key) ? 'Открыть ' + KEY_NAME[d.key] + ' ключом'
       : player.picks > 0 ? 'Вскрыть отмычкой (удерживай E)' : 'Заперто: ' + (KEY_NAME[d.key] || '');
     else label = (d.state === 'open' ? 'Закрыть дверь' : 'Открыть дверь') + (d.num ? ' кв.' + d.num : '');
@@ -2316,6 +2906,13 @@ function actionCandidates() {
     add('lift', E, label, Math.max(0, Math.abs(player.x - (E.x + E.w / 2)) - E.w / 2 - 18), ACT_EPS.lift);
   }
 
+  /* перила у лестницы: держи [Скользить] — катишься вниз по маршу */
+  if (!player.rail && player.onGround && player.floor > 0 && !player.riding &&
+      player.x >= world.sa - 10 && player.x <= world.sa + 64) {
+    const rail = world.rails[player.floor - 1];
+    if (rail) add('slide', rail, 'Скользить', Math.abs(player.x - (world.sa + 22)) * 0.6, ACT_EPS.slide);
+  }
+
   /* стул */
   const seat = seatInfo();
   if (seat && Math.abs(player.x - seat.x) < 36 && !player.rail) {
@@ -2327,7 +2924,10 @@ function actionCandidates() {
 function nearestAction() {
   if (player.dead) return null;
   if (player.riding) {
-    return { kind: 'lift', label: liftHere() && world.elevator.state === 'open' ? 'Выйти из лифта' : 'Панель лифта', ref: world.elevator };
+    /* выбрал этаж на панели — кнопка называется [Поехали]; панель закрыта — [Выйти из лифта] */
+    const label = panel.open ? 'Поехали'
+      : (liftHere() && world.elevator.state === 'open' ? 'Выйти из лифта' : 'Панель лифта');
+    return { kind: 'lift', label, ref: world.elevator };
   }
   if (player.seated) return { kind: 'seat', ref: 'stand', label: 'Встать' };
   const list = actionCandidates();
@@ -2354,7 +2954,7 @@ function doAction() {
         else knockDoor(d);
         return;
       }
-      if (d.state === 'bolted') { knockDoor(d); return; }
+      if (d.state === 'bolted') { if (player.keys.includes('attic')) openDoor(d); else knockDoor(d); return; }
       if (!openDoor(d)) knockDoor(d);
       return;
     }
@@ -2363,6 +2963,14 @@ function doAction() {
     case 'npc': talkNpc(a.ref); return;
     case 'fusebox': insertFuse(); return;
     case 'lift': liftAction(); return;
+    case 'slide': {
+      if (player.rail) { player.slide = true; SFX.step(); return; }
+      if (!nearStairs() || player.floor <= 0) return;
+      const r = world.rails[player.floor - 1];
+      if (!r) return;
+      if (attachRail(player.floor - 1, r.len - 1, -1)) { player.slide = true; SFX.step(); }
+      return;
+    }
     case 'seat': if (a.ref === 'stand' || player.seated) standUp(); else sitDown(); return;
   }
 }
@@ -2442,8 +3050,11 @@ function verticalCtx() {
   if (player.dead || term.open || ui.infoOpen()) return out;
   /* в кабине лифта — выбор этажа */
   if (player.riding) { out.up = 'Верх'; out.down = 'Вниз'; return out; }
-  /* на стуле и в прыжке вертикальные кнопки не нужны */
-  if (player.seated || player.rail) return out;
+  /* на стуле вертикальные кнопки не нужны */
+  if (player.seated) return out;
+  /* на марше кнопки остаются на месте, пока герой на лестнице:
+     удерживаешь [Верх]/[Вниз] — едешь, отпустил — стоишь там, где стоишь */
+  if (player.rail) { out.up = 'Верх'; out.down = 'Вниз'; return out; }
   if (nearStairs()) {
     if (player.floor <= world.N) out.up = 'Верх';
     if (player.floor > 0) out.down = 'Вниз';
@@ -2454,8 +3065,10 @@ function verticalCtx() {
 function doVertical(dir) {
   if (player.dead || term.open || ui.infoOpen()) return;
   if (player.riding) { panelMove(dir === 'up' ? 1 : -1); return; }
-  if (player.seated || player.rail) return;
+  if (player.seated) return;
+  if (player.rail) { inputs[dir] = true; return; }   /* на марше кнопка сразу ведёт вверх/вниз */
   if (nearStairs()) {
+    player.slide = false;
     if (dir === 'up' && player.floor <= world.N) { attachRail(player.floor, 1, 1); return; }
     if (dir === 'down' && player.floor > 0) { const r = world.rails[player.floor - 1]; if (r) attachRail(player.floor - 1, r.len - 1, -1); return; }
   }
@@ -2573,7 +3186,10 @@ const skystars = [];
   const r = makeRng(4242);
   for (let i = 0; i < 130; i++) skystars.push({ x: r(), y: r() * 0.8, s: r() * 1.6 + 0.4, p: r() * TAU });
 })();
-function drawSky() {
+/* небо делим на две части: фон (небо, звёзды, облака) и светило (солнце/луна).
+   Окна берут снимок фона, поэтому в стекле не появляется вторая, «большая» луна. */
+function drawSky() { drawSkyBase(); drawCelestial(); }
+function drawSkyBase() {
   setScreen();
   const t = CONFIG.env.time, sk = SKY[t];
   const g = ctx.createLinearGradient(0, 0, 0, viewH);
@@ -2590,6 +3206,24 @@ function drawSky() {
       ctx.fillRect(s.x * viewW, s.y * viewH * 0.75, s.s, s.s);
     }
   }
+  const wpow = world.weather && world.weather.power !== undefined ? world.weather.power : 0.5;
+  const cl = (t === 'night' ? 0.14 : 0.4) *
+    (world.weather.kind === 'clear' ? 0.4 + wpow * 0.2 : 0.7 + wpow * 0.9);
+  const drift = world.time * 6;
+  for (let i = 0; i < 7; i++) {
+    const bx = ((i * 0.19 + drift * 0.004 * (0.6 + i * 0.1)) % 1.4) - 0.2;
+    const by = 0.10 + ((i * 0.137) % 0.42);
+    ctx.fillStyle = 'rgba(225,230,245,' + cl * (0.5 + (i % 3) * 0.16) + ')';
+    const w = (0.20 + (i % 4) * 0.05) * viewW, hh = viewH * 0.035;
+    ctx.beginPath();
+    ctx.ellipse(bx * viewW, by * viewH, w, hh, 0, 0, TAU);
+    ctx.ellipse(bx * viewW + w * 0.45, by * viewH - hh * 0.5, w * 0.55, hh * 0.8, 0, 0, TAU);
+    ctx.fill();
+  }
+}
+function drawCelestial() {
+  setScreen();
+  const t = CONFIG.env.time;
   const cyc = (world.clock / 1440) * TAU - Math.PI / 2;
   const mx = viewW * (0.72 + Math.cos(cyc + 2.1) * 0.26);
   const my = viewH * (0.18 + Math.sin(cyc) * 0.10);
@@ -2618,18 +3252,6 @@ function drawSky() {
     ctx.fillStyle = gg; ctx.fillRect(mx - r * 5, my - r * 5, r * 10, r * 10);
     ctx.fillStyle = t === 'dawn' ? '#ffd9a0' : '#fff4cf';
     ctx.beginPath(); ctx.arc(mx, my, r, 0, TAU); ctx.fill();
-  }
-  const cl = (t === 'night' ? 0.14 : 0.4) * (world.weather.kind === 'clear' ? 0.5 : 1.3);
-  const drift = world.time * 6;
-  for (let i = 0; i < 7; i++) {
-    const bx = ((i * 0.19 + drift * 0.004 * (0.6 + i * 0.1)) % 1.4) - 0.2;
-    const by = 0.10 + ((i * 0.137) % 0.42);
-    ctx.fillStyle = 'rgba(225,230,245,' + cl * (0.5 + (i % 3) * 0.16) + ')';
-    const w = (0.20 + (i % 4) * 0.05) * viewW, hh = viewH * 0.035;
-    ctx.beginPath();
-    ctx.ellipse(bx * viewW, by * viewH, w, hh, 0, 0, TAU);
-    ctx.ellipse(bx * viewW + w * 0.45, by * viewH - hh * 0.5, w * 0.55, hh * 0.8, 0, 0, TAU);
-    ctx.fill();
   }
 }
 
@@ -2922,40 +3544,43 @@ function drawFloorBack(fl) {
   R(world.liftX, y - h, world.liftW, h, '#1b1826');
 }
 
-/* ── окна: стекло прозрачное — видно улицу, небо и погоду ── */
-function drawWindows(fl) {
-  if (fl.isRoof || fl.isBase) return;
+/* ── стекло: кусок «улицы», снятый до отрисовки дома (общее для комнат и лестницы) ── */
+function paintGlass(x, y, w, h) {
   const t = CONFIG.env.time;
   const night = t === 'night' || t === 'dusk';
   const lit = world.powerStage >= 3;
-
-  /* 1) стекло: кусок «улицы», снятый до отрисовки дома */
   setScreen();
-  for (const w of fl.windows) {
-    const sx = SX(w.x), sy = SY(w.y);
-    const sw = Math.max(1, w.w * cam.z), sh = Math.max(1, w.h * cam.z);
-    if (sx > viewW || sy > viewH || sx + sw < 0 || sy + sh < 0) continue;
-    ctx.save();
-    ctx.beginPath(); ctx.rect(sx, sy, sw, sh); ctx.clip();
-    try {
-      const k = bgCanvas.width / canvas.width;
-      if (bgCanvas.width > 1) ctx.drawImage(bgCanvas, sx * dpr * k, sy * dpr * k, sw * dpr * k, sh * dpr * k, sx, sy, sw, sh);
-    } catch (_) {}
-    /* тон стекла */
-    ctx.fillStyle = lit ? 'rgba(255,226,170,.14)' : night ? 'rgba(96,126,186,.18)' : 'rgba(176,208,236,.14)';
-    ctx.fillRect(sx, sy, sw, sh);
-    /* узкий диагональный блик — стекло, а не зеркало */
-    ctx.fillStyle = 'rgba(255,255,255,.055)';
-    ctx.beginPath();
-    ctx.moveTo(sx + sw * 0.12, sy + sh);
-    ctx.lineTo(sx + sw * 0.40, sy);
-    ctx.lineTo(sx + sw * 0.50, sy);
-    ctx.lineTo(sx + sw * 0.22, sy + sh);
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
-  }
+  const sx = SX(x), sy = SY(y);
+  const sw = Math.max(1, w * cam.z), sh = Math.max(1, h * cam.z);
+  if (sx > viewW || sy > viewH || sx + sw < 0 || sy + sh < 0) { setWorld(); return; }
+  ctx.save();
+  ctx.beginPath(); ctx.rect(sx, sy, sw, sh); ctx.clip();
+  try {
+    const k = bgCanvas.width / canvas.width;
+    if (bgCanvas.width > 1) ctx.drawImage(bgCanvas, sx * dpr * k, sy * dpr * k, sw * dpr * k, sh * dpr * k, sx, sy, sw, sh);
+  } catch (_) {}
+  /* тон стекла */
+  ctx.fillStyle = lit ? 'rgba(255,226,170,.14)' : night ? 'rgba(96,126,186,.18)' : 'rgba(176,208,236,.14)';
+  ctx.fillRect(sx, sy, sw, sh);
+  /* узкий диагональный блик — стекло, а не зеркало */
+  ctx.fillStyle = 'rgba(255,255,255,.055)';
+  ctx.beginPath();
+  ctx.moveTo(sx + sw * 0.12, sy + sh);
+  ctx.lineTo(sx + sw * 0.40, sy);
+  ctx.lineTo(sx + sw * 0.50, sy);
+  ctx.lineTo(sx + sw * 0.22, sy + sh);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
   setWorld();
+}
+
+/* ── окна: стекло прозрачное — видно улицу, небо и погоду ── */
+function drawWindows(fl) {
+  if (fl.isRoof || fl.isBase) return;
+
+  /* 1) стекло */
+  for (const w of fl.windows) paintGlass(w.x, w.y, w.w, w.h);
 
   /* 2) рама, переплёт, подоконник — поверх стекла */
   for (const w of fl.windows) {
@@ -3157,12 +3782,14 @@ function drawStairs(vis) {
     /* опора площадки */
     R(world.sb + 2, r.yMid + 9, 5, world.pitch / 2 - 9, '#37314a');
     R(world.midEnd - 8, r.yMid + 9, 5, world.pitch / 2 - 9, '#37314a');
-    /* окно на площадке */
-    const wx = world.midEnd - 46, wy = r.yMid - 62;
-    R(wx - 3, wy - 3, 40, 40, '#3a3450');
-    R(wx, wy, 34, 34, CONFIG.env.time === 'night' ? '#1a2440' : '#7fa7c8');
-    R(wx + 15, wy, 2.4, 34, '#3a3450');
-    R(wx, wy + 15, 34, 2.4, '#3a3450');
+    /* окно на межэтажной площадке — ниже перекрытия, стекло прозрачное: видно улицу */
+    const wx = world.midEnd - 52, wy = r.yMid - 44;
+    R(wx - 4, wy - 4, 42, 40, '#3a3450');
+    paintGlass(wx, wy, 34, 30);
+    R(wx + 15.6, wy, 2.6, 30, '#3a3450');
+    R(wx, wy + 13.6, 34, 2.6, '#3a3450');
+    R(wx - 5, wy + 30, 44, 3, '#3a3550');
+    R(wx - 5, wy + 30, 44, 1, withAlpha('#ffffff', .12));
   }
   /* ограждение площадки этажа у проёма */
   const t = CONFIG.env.time;
@@ -3232,6 +3859,12 @@ function drawElevator() {
   R(E.x2 - 16, sy0, 1, carTopY - sy0, '#3d3752');
   R(E.x2 - 24, carTopY + 30, 10, 30, '#2b263a');
   const cx0 = E.x + (E.w - E.carW) / 2, cx1 = cx0 + E.carW;
+  /* едем — кабина становится полупрозрачной: видно, что герой внутри, а не «летит» между этажами */
+  const riding = !!player.riding;
+  const travelling = riding && (E.state === 'closed' || E.state === 'closing' ||
+    Math.abs(E.carY - E.target) > 1.5);
+  ctx.save();
+  if (travelling) ctx.globalAlpha = 0.46;
   R(cx0, carTopY, E.carW, E.carH, '#2c2739');
   R(cx0, carTopY, E.carW, 2.6, '#6d6590');
   R(cx0, E.carY - 5, E.carW, 5, '#413a58');
@@ -3242,6 +3875,14 @@ function drawElevator() {
   R(cx0 + 6, E.carY - 34, E.carW - 12, 2.4, '#7d75a0');
   R(cx1 - 17, E.carY - 46, 10, 15, '#4a4460');
   for (let i = 0; i < 3; i++) R(cx1 - 15, E.carY - 44 + i * 4, 6, 2.2, world.powerStage >= 2 ? '#ffcf6b' : '#332e44');
+  if (travelling) {
+    /* стекло кабины: блик, чтобы «прозрачность» читалась как стекло, а не как баг */
+    ctx.fillStyle = 'rgba(190,210,240,.10)';
+    ctx.fillRect(cx0 + 3, carTopY + 3, E.carW - 6, E.carH - 8);
+    ctx.strokeStyle = 'rgba(255,255,255,.16)'; ctx.lineWidth = 1 / cam.z;
+    ctx.strokeRect(cx0 + 3, carTopY + 3, E.carW - 6, E.carH - 8);
+  }
+  ctx.restore();
   /* створки на каждом этаже */
   for (let f = 0; f <= world.N; f++) {
     const fy = floorBaseY(f);
@@ -3251,6 +3892,8 @@ function drawElevator() {
     const open = here ? (E.state === 'open' ? 1 : E.state === 'opening' ? clamp(E.t / 0.45, 0, 1) : E.state === 'closing' ? 1 - clamp(E.t / 0.4, 0, 1) : 0) : 0;
     const gw = E.w, gh = E.gateH;
     const gy = fy - gh;
+    ctx.save();
+    if (travelling && here) ctx.globalAlpha = 0.5;
     /* стена над проёмом */
     R(E.x - 6, fy - world.floorH, gw + 12, world.floorH - gh - 5, '#2b2640');
     R(E.x - 6, fy - world.floorH, gw + 12, 1.4, withAlpha('#ffffff', .08));
@@ -3301,6 +3944,17 @@ function drawElevator() {
       ctx.fillStyle = here ? '#ffcf6b' : '#5a5480';
       ctx.beginPath(); ctx.arc(E.x2 + 12, gy + 4, 1.8, 0, TAU); ctx.fill();
     }
+    ctx.restore();
+    /* кнопка вызова — слева от шахты, на уровне героя */
+    const bx = E.x - 15, by = fy - 46;
+    R(bx - 1, by - 1, 12, 18, '#241f33');
+    R(bx, by, 10, 16, '#3a3450');
+    R(bx, by, 10, 1.4, 'rgba(255,255,255,.16)');
+    const called = E.state === 'closing' || E.state === 'closed' ||
+      (E.targetF === f && Math.abs(E.target - fy) > 1);
+    const lit = world.powerStage >= 2 && called;
+    R(bx + 2.5, by + 3.5, 5, 5, lit ? '#ffcf6b' : '#1c1a26');
+    R(bx + 2.5, by + 10, 5, 2.2, world.powerStage >= 2 ? (lit ? '#ffcf6b' : '#4a4460') : '#242030');
   }
   /* панель в кабине */
   if (panel.open) drawPanelWorld(E, cx0, cx1, carTopY);
@@ -3591,15 +4245,28 @@ function drawItems() {
 function drawNpcs() {
   for (const n of world.npcs) {
     if (Math.abs(n.y - cam.y) > viewH / cam.z + 40) continue;
-    const sway = Math.sin((n.t || 0) * 1.1) * 0.8;
+    const walking = n.mode === 'out' || n.mode === 'back';
+    const sway = walking ? Math.sin((n.walk || 0) * 2.2) * 0.8 : Math.sin((n.t || 0) * 1.1) * 0.8;
     const x = n.x, y = n.y;
     R(x - 7 + sway, y - 30, 14, 20, '#3c4a5a');
     R(x - 8 + sway, y - 32, 16, 4, '#4a5a6a');
     R(x - 7 + sway, y - 42, 13, 12, '#c8a882');
     R(x - 8 + sway, y - 44, 15, 6, n.name.length % 2 ? '#8a5a4a' : '#6a6a7a');
     R(x - 5 + sway * 2, y - 38, 2, 2, '#1a1a22'); R(x + 2 + sway * 2, y - 38, 2, 2, '#1a1a22');
-    R(x - 8 + sway, y - 10, 6, 10, '#2a3440'); R(x + 2 + sway, y - 10, 6, 10, '#2a3440');
-    R(x - 8 + sway, y - 1, 7, 3, '#20242c'); R(x + 2 + sway, y - 1, 7, 3, '#20242c');
+    const legS = walking ? Math.sin((n.walk || 0) * 2.2) * 2.2 : 0;
+    R(x - 6 + sway, y - 11, 5, 11 + legS, '#2a3440'); R(x + 2 + sway, y - 11, 5, 11 - legS, '#2a3440');
+    R(x - 6.6 + sway, y - 2 + legS * 0.4, 6, 3, '#20242c'); R(x + 1.6 + sway, y - 2 - legS * 0.4, 6, 3, '#20242c');
+    /* сигарета в руке — с тлеющим огоньком */
+    if (n.smoking) {
+      const cx = x + 9 + sway * 0.4, cy = y - 30;
+      R(cx, cy, 5.4, 1.6, '#e8e2d4');
+      R(cx + 5, cy, 1.4, 1.6, '#8a5a2a');
+      const fl = 0.55 + 0.45 * Math.sin((n.t || 0) * 9);
+      ctx.fillStyle = 'rgba(255,120,60,' + fl + ')';
+      ctx.fillRect(cx + 6.2, cy - 0.2, 1.9, 1.9);
+      ctx.fillStyle = 'rgba(255,90,40,' + (fl * 0.35) + ')';
+      ctx.fillRect(cx + 5.4, cy - 1.4, 4, 4);
+    }
     /* подпись */
     ctx.save(); ctx.translate(x, y - 54); ctx.scale(1 / cam.z, 1 / cam.z);
     ctx.fillStyle = 'rgba(8,7,16,.7)'; ctx.font = '6px monospace'; ctx.textAlign = 'center';
@@ -3608,6 +4275,23 @@ function drawNpcs() {
     ctx.fillStyle = '#a8e0c8'; ctx.textBaseline = 'middle';
     ctx.fillText(n.name, 0, -1);
     ctx.restore();
+  }
+}
+
+/* ── дым от сигареты и дыхания ── */
+function drawSmoke() {
+  if (!world.smoke || !world.smoke.length) return;
+  for (const s of world.smoke) {
+    const k = s.t / s.life;
+    const a = (1 - k) * (k < 0.18 ? k / 0.18 : 1) * 0.5;
+    if (a <= 0.01) continue;
+    const sx = SX(s.x), sy = SY(s.y), rr = Math.max(1.4, s.r * cam.z);
+    const g = ctx.createRadialGradient(sx, sy, 0, sx, sy, rr);
+    g.addColorStop(0, 'rgba(214,214,226,' + a + ')');
+    g.addColorStop(0.6, 'rgba(196,198,214,' + (a * 0.5) + ')');
+    g.addColorStop(1, 'rgba(190,192,210,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(sx, sy, rr, 0, TAU); ctx.fill();
   }
 }
 
@@ -3700,7 +4384,14 @@ function drawHero() {
     ? { top: '#5a3a2a', top2: '#3a2418', hi: '#d8d0b8', pants: '#2b2f3a', shoe: '#20242c', hair: '#1e1610', skin: '#c89870' }
     : st === 'bomber'
     ? { top: '#2a3a32', top2: '#1e2a24', hi: '#c8a040', pants: '#242a34', shoe: '#181c22', hair: '#1a1410', skin: '#c89870' }
+    : st === 'blackhoodie'
+    ? { top: '#17171d', top2: '#0d0d12', hi: '#33333d', pants: '#23232b', shoe: '#d8d0c0', hair: '#241a16', skin: '#c89870' }
+    : st === 'blackjacket'
+    ? { top: '#101014', top2: '#08080b', hi: '#4a4a54', glow: '#2a2f3a', pants: '#1b1b22', shoe: '#0d0d11', hair: '#241a16', skin: '#c89870' }
     : { top: '#4a4a6a', top2: '#33334d', hi: '#7a7aa8', pants: '#2c3444', shoe: '#d8d0c0', hair: '#241a16', skin: '#c89870' };
+  const hooded = HOOD_SPRITES.includes(st) && !!CONFIG.sprites.hood;
+  const hoodCol = st === 'blackjacket' ? '#0a0a0d' : '#131319';
+  const hoodRim = st === 'blackjacket' ? '#3a3a44' : '#2c2c36';
   ctx.fillStyle = 'rgba(0,0,0,.28)';
   ctx.beginPath(); ctx.ellipse(0, 0, 9, 2, 0, 0, TAU); ctx.fill();
   const legSwing = walk ? ph * 3.2 : 0;
@@ -3733,6 +4424,13 @@ function drawHero() {
   ctx.fillRect(-6.2, -17.4 + breathe * 0.5 + bodyY, 12.6, 1.2);
   ctx.fillStyle = 'rgba(0,0,0,.20)';
   ctx.fillRect(-4.6, -19 + breathe * 0.5 + bodyY, 9.2, 4);
+  if (st === 'blackjacket') {
+    /* молния и чуть светлее воротник — куртка читается отдельно от толстовки */
+    ctx.fillStyle = '#5a5a66';
+    ctx.fillRect(0.4, -25 + breathe * 0.5 + bodyY, 0.9, 12);
+    ctx.fillStyle = '#22222a';
+    ctx.fillRect(-6.2, -25 + breathe * 0.5 + bodyY, 12.6, 1.6);
+  }
   /* руки */
   ctx.fillStyle = palette.top;
   const armS = walk ? -ph * 2.6 : Math.sin(p.breath * 2.4) * 0.6;
@@ -3741,18 +4439,43 @@ function drawHero() {
   ctx.fillStyle = palette.skin;
   ctx.fillRect(-8.4, -15.4 + breathe * 0.5 + bodyY + armS, 3.4, 2.8);
   ctx.fillRect(5, -15.4 + breathe * 0.5 + bodyY - armS, 3.4, 2.8);
-  /* капюшон */
-  ctx.fillStyle = palette.top2;
-  ctx.beginPath(); ctx.ellipse(-5.2, -27.5 + breathe * 0.5 + bodyY, 4.6, 5.2, -0.35, 0, TAU); ctx.fill();
+  /* капюшон: если надет — за головой лежит «чаша» капюшона */
+  if (hooded) {
+    ctx.fillStyle = hoodCol;
+    ctx.beginPath(); ctx.ellipse(-1.4, -33.0 + breathe * 0.6 + bodyY, 7.0, 7.4, 0, 0, TAU); ctx.fill();
+    /* воротник капюшона на плечах */
+    ctx.beginPath();
+    ctx.moveTo(-6.4, -25.4 + breathe * 0.5 + bodyY);
+    ctx.quadraticCurveTo(-1.0, -20.6 + breathe * 0.5 + bodyY, 4.4, -25.0 + breathe * 0.5 + bodyY);
+    ctx.quadraticCurveTo(1.0, -23.2 + breathe * 0.5 + bodyY, -6.4, -23.4 + breathe * 0.5 + bodyY);
+    ctx.closePath(); ctx.fill();
+  } else {
+    ctx.fillStyle = palette.top2;
+    ctx.beginPath(); ctx.ellipse(-5.2, -27.5 + breathe * 0.5 + bodyY, 4.6, 5.2, -0.35, 0, TAU); ctx.fill();
+  }
   /* шея/голова */
   ctx.fillStyle = palette.skin;
   ctx.fillRect(-3.4, -28.6 + breathe * 0.6 + bodyY, 6.8, 4.6);
   ctx.fillRect(-4.6, -36 + breathe * 0.6 + bodyY, 9.4, 8.4);
-  /* стрижка */
-  ctx.fillStyle = palette.hair;
-  ctx.fillRect(-5, -37.2 + breathe * 0.6 + bodyY, 10, 4.2);
-  ctx.fillRect(-5, -34 + breathe * 0.6 + bodyY, 2.6, 3.4);
-  ctx.fillRect(4.2, -34.6 + breathe * 0.6 + bodyY, 1.6, 2.2);
+  if (hooded) {
+    /* капюшон облегает голову: снаружи — ткань, внутри — овал лица, без «скафандра» */
+    ctx.fillStyle = hoodCol;
+    ctx.beginPath(); ctx.ellipse(0.4, -32.4 + breathe * 0.6 + bodyY, 6.2, 6.8, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = palette.skin;
+    ctx.beginPath(); ctx.ellipse(1.6, -31.8 + breathe * 0.6 + bodyY, 4.4, 5.2, 0, 0, TAU); ctx.fill();
+    /* чёлка из-под капюшона */
+    ctx.fillStyle = palette.hair;
+    ctx.fillRect(-2.6, -36.4 + breathe * 0.6 + bodyY, 6.6, 2.0);
+    /* кант капюшона */
+    ctx.strokeStyle = hoodRim; ctx.lineWidth = 0.9;
+    ctx.beginPath(); ctx.ellipse(1.6, -31.8 + breathe * 0.6 + bodyY, 4.6, 5.4, 0, -1.9, 1.9); ctx.stroke();
+  } else {
+    /* стрижка */
+    ctx.fillStyle = palette.hair;
+    ctx.fillRect(-5, -37.2 + breathe * 0.6 + bodyY, 10, 4.2);
+    ctx.fillRect(-5, -34 + breathe * 0.6 + bodyY, 2.6, 3.4);
+    ctx.fillRect(4.2, -34.6 + breathe * 0.6 + bodyY, 1.6, 2.2);
+  }
   /* лицо: глаза с морганием и взглядом */
   const eyeY = -32.6 + breathe * 0.6 + bodyY;
   const lx = clamp(p.look, -0.7, 0.7) * 1.1;
@@ -3802,33 +4525,51 @@ function drawWeather() {
   const w = world.weather;
   if (!w) return;
   const k = w.kind;
+  /* сила проявления: морось → дождь → ливень, снежок → метель, дымка → туман */
+  const pow = clamp(w.power === undefined ? 0.55 : w.power, 0, 1);
   if (k === 'rain' || k === 'storm') {
-    ctx.strokeStyle = 'rgba(170,200,235,.34)';
-    ctx.lineWidth = 1;
+    const n = Math.round(26 + pow * 190);
+    const alpha = 0.16 + pow * 0.3;
+    const len = 6 + pow * 13;
+    ctx.strokeStyle = 'rgba(170,200,235,' + alpha.toFixed(3) + ')';
+    ctx.lineWidth = 0.7 + pow * 0.9;
     ctx.beginPath();
-    for (let i = 0; i < 150; i++) {
-      const d = drops[i];
-      const x = ((d.x + world.time * (0.10 + w.wind * 0.16) * d.v) % 1.2 - 0.1) * viewW;
-      const y = ((d.y + world.time * (0.9 + d.v * 0.7)) % 1.1) * viewH;
-      ctx.moveTo(x, y); ctx.lineTo(x - 4 - w.wind * 5, y + 13);
+    for (let i = 0; i < n; i++) {
+      const d = drops[i % drops.length];
+      const x = ((d.x + world.time * (0.06 + w.wind * 0.14 * pow) * d.v) % 1.2 - 0.1) * viewW;
+      const y = ((d.y + world.time * (0.55 + pow * 0.9 + d.v * 0.6)) % 1.1) * viewH;
+      ctx.moveTo(x, y); ctx.lineTo(x - 3 - w.wind * (3 + pow * 4), y + len);
     }
     ctx.stroke();
   } else if (k === 'snow') {
-    for (let i = 0; i < 130; i++) {
-      const d = drops[i];
+    const n = Math.round(34 + pow * 150);
+    for (let i = 0; i < n; i++) {
+      const d = drops[i % drops.length];
       const x = ((d.x + Math.sin(world.time * 0.6 + d.s * 9) * 0.04 + world.time * 0.02 * w.wind) % 1.1) * viewW;
-      const y = ((d.y + world.time * 0.07 * d.v) % 1.05) * viewH;
-      ctx.fillStyle = 'rgba(242,247,255,' + (0.45 + d.s * 0.5) + ')';
-      const sz = 2.2 + d.s * 2.6;
+      const y = ((d.y + world.time * (0.03 + pow * 0.09) * d.v) % 1.05) * viewH;
+      ctx.fillStyle = 'rgba(242,247,255,' + (0.35 + pow * 0.5 + d.s * 0.15).toFixed(3) + ')';
+      const sz = (pow > 0.6 ? 2.4 : 1.6) + d.s * (1.6 + pow * 1.6);
       ctx.fillRect(x, y, sz, sz);
+    }
+    if (pow > 0.75) {
+      /* метель: белёсая пелена по низу кадра */
+      const g2 = ctx.createLinearGradient(0, viewH * 0.55, 0, viewH);
+      g2.addColorStop(0, 'rgba(232,240,250,0)');
+      g2.addColorStop(1, 'rgba(232,240,250,' + (0.12 + pow * 0.12) + ')');
+      ctx.fillStyle = g2; ctx.fillRect(0, viewH * 0.55, viewW, viewH * 0.45);
     }
   }
   if (k === 'fog') {
+    const a = 0.05 + pow * 0.3;
     const g = ctx.createLinearGradient(0, 0, 0, viewH);
-    g.addColorStop(0, 'rgba(170,185,200,.06)');
-    g.addColorStop(0.5, 'rgba(180,195,210,.18)');
-    g.addColorStop(1, 'rgba(190,205,220,.28)');
+    g.addColorStop(0, 'rgba(170,185,200,' + (a * 0.35) + ')');
+    g.addColorStop(0.5, 'rgba(180,195,210,' + (a * 0.7) + ')');
+    g.addColorStop(1, 'rgba(190,205,220,' + a + ')');
     ctx.fillStyle = g; ctx.fillRect(0, 0, viewW, viewH);
+  }
+  if (k === 'cloudy' && pow > 0.5) {
+    ctx.fillStyle = 'rgba(120,132,150,' + ((pow - 0.5) * 0.16) + ')';
+    ctx.fillRect(0, 0, viewW, viewH);
   }
 }
 
@@ -3838,7 +4579,8 @@ function drawDarkness() {
   const base = { night: 0.9, dawn: 0.62, day: 0.16, dusk: 0.66 }[t] * CONFIG.light.darkness;
   const power = world.powerStage / 3;
   let dark = base * (1 - power * 0.5);
-  if (world.weather && world.weather.kind === 'storm') dark = Math.min(0.92, dark + 0.05);
+  if (world.weather && world.weather.kind === 'storm') dark = Math.min(0.92, dark + 0.03 + 0.04 * (world.weather.power || 0.6));
+  else if (world.weather && world.weather.kind === 'rain') dark = Math.min(0.92, dark + 0.02 * (world.weather.power || 0.5));
   world._dark = dark;
   if (dark < 0.02) { setScreen(); return; }
   dctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -3872,6 +4614,17 @@ function drawDarkness() {
     dctx.beginPath();
     dctx.rect(-1, -1, darkCanvas.width + 2, Math.max(0, floorPy + 1));
     dctx.clip();
+    /* закрытая дверь режет луч: сквозь неё фонарь не светит в комнату, за открытую — светит */
+    const blocker = coneBlocker();
+    if (blocker) {
+      /* свет остаётся на стороне героя: дверь — стена, за неё луч не идёт */
+      const bx = toS(blocker, 0)[0];
+      const x0 = player.dir > 0 ? 0 : bx;
+      const w = player.dir > 0 ? bx : darkCanvas.width - bx;
+      dctx.beginPath();
+      dctx.rect(x0, -1, Math.max(0, w), darkCanvas.height + 2);
+      dctx.clip();
+    }
     dctx.beginPath();
     dctx.moveTo(px, py);
     dctx.arc(px, py, range, ang - spread, ang + spread);
@@ -3950,6 +4703,22 @@ function drawDarkness() {
   ctx.restore();
 }
 
+/** Ближайшая закрытая дверь по направлению взгляда — стена для фонаря. */
+function coneBlocker() {
+  if (!(player.torch && player.battery > 0) || player.dead) return 0;
+  const reach = CONFIG.player.torchRange * 0.92;
+  let best = 0;
+  for (const d of world.doors) {
+    if (d.f !== player.floor) continue;
+    if (d.anim > 0.5) continue;                     /* приоткрыта — свет проходит */
+    const dx = d.x - player.x;
+    if (player.dir >= 0 ? dx < 0 : dx > 0) continue;
+    if (Math.abs(dx) > reach) continue;
+    if (!best || Math.abs(dx) < Math.abs(best - player.x)) best = d.x;
+  }
+  return best;
+}
+
 /* ── подсказки над головой и реплики ── */
 function drawOverlays() {
   setScreen();
@@ -3972,6 +4741,28 @@ function drawOverlays() {
     ctx.fillStyle = '#efe6cf'; ctx.font = '600 12px ' + ff;
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     ctx.fillText(label, bx + 21, by + 11.5);
+  }
+  /* отмычка: полоска прогресса над героем — видно, что замок поддаётся */
+  const pd = player.pickDoor;
+  if (pd && player.pickT > 0 && mode === 'play') {
+    const need = CONFIG.player.pickTime * (0.8 + (pd.pick || 1) * 0.22);
+    const k = clamp(player.pickT / need, 0, 1);
+    /* полоска сидит ровно над подсказкой действия (та — на 60*cam.z над ногами, высота 22) */
+    const px = SX(player.x), py = SY(player.y) - 60 * cam.z - 28;
+    const w = Math.min(204, viewW - 40), h = 15;
+    const bx = clamp(px - w / 2, 10, viewW - w - 10), byy = clamp(py, 10, viewH - 34);
+    ctx.fillStyle = 'rgba(10,8,20,.9)';
+    ctx.fillRect(bx - 1, byy - 1, w + 2, h + 2);
+    ctx.strokeStyle = 'rgba(255,207,107,.62)'; ctx.lineWidth = 1;
+    ctx.strokeRect(bx - 0.5, byy - 0.5, w + 1, h + 1);
+    ctx.fillStyle = 'rgba(255,207,107,.16)';
+    ctx.fillRect(bx + 2, byy + 2, w - 4, h - 4);
+    ctx.fillStyle = '#ffcf6b';
+    ctx.fillRect(bx + 2, byy + 2, (w - 4) * k, h - 4);
+    ctx.fillStyle = k > 0.55 ? '#0b0912' : '#ffe6b0';
+    ctx.font = '700 9px monospace';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('ОТМЫЧКА ' + Math.round(k * 100) + '%', bx + w / 2, byy + h / 2 + 0.5);
   }
   let by = 0;
   for (const b of bubbles) {
@@ -4063,7 +4854,7 @@ function cacheDom() {
     'btnSet', 'btnSetClose', 'btnSetReset', 'btnPause', 'btnSound', 'btnTorch',
     'setRows', 'layoutRows', 'doorRows', 'seedInput', 'btnReroll',
     'btnSegCorr', 'btnSegRoom', 'btnSegShuffle', 'btnInfoOk', 'btnInfoX', 'infoTitle', 'infoBody',
-    'btnTermX', 'termOut', 'termIn', 'termPs1', 'termTitle',
+    'btnTermX', 'termOut', 'termIn', 'termPs1', 'termTitle', 'termLine', 'termHead',
     'btnAgain', 'btnNewHouse', 'endTitle', 'endSub', 'endText', 'endStats', 'startFine', 'pauseFine'];
   for (const id of ids) dom[id] = $(id);
   dom.canvas = dom.game;
@@ -4154,6 +4945,8 @@ function syncPrompt() {
   dom.pad.classList.toggle('vertical', !!(st.up || st.down));
   dom.pad.classList.toggle('has-ctx', !!st.ctx);
   dom.pad.classList.toggle('seated', st.seated);
+  /* кнопка исчезла, пока палец держал её — снимаем зажатие, иначе герой едет сам */
+  if (typeof padReleaseHidden === 'function') padReleaseHidden();
   const bu = dom.pad.querySelector('[data-k="up"]');
   const bd = dom.pad.querySelector('[data-k="down"]');
   const bc = dom.pad.querySelector('[data-k="ctx"]');
@@ -4190,9 +4983,15 @@ function updateWorld(dt) {
       w.boltT -= dt;
       if (w.boltT <= 0) { w.boltT = 7 + Math.random() * 14; w.bolt = 1; SFX.thunder(); }
     }
+    /* погода живёт сама: раз в пару минут выбирается заново по сезону и времени суток */
+    if (CONFIG.env.auto) {
+      w.autoT = (w.autoT === undefined ? 25 : w.autoT) - dt;
+      if (w.autoT <= 0) { rollWeather(); }
+    }
   }
   updateDoors(dt);
   updateElevator(dt);
+  updateNpcs(dt);
   updateEnemies(dt);
   updateItems(dt);
   checkIntrusion();
@@ -4231,7 +5030,7 @@ function resetRun() {
   player.fuses = 0; player.picks = 1; player.keys = [];
   player.riding = false; player.rail = null; player.seated = false;
   bubbles.length = 0; bullets.length = 0;
-  panel.open = false; term.open = false; term.out = []; term.hist = []; term.hi = -1;
+  panel.open = false; term.open = false; term.out = []; term.hist = []; term.hi = -1; term.net = null;
   for (const d of world.doors) { d.rattle = 0; d.knockT = 0; d.lineT = 0; }
   for (const e of world.enemies) { e.alert = 0; e.shots = 0; e.cool = 0; }
   const homeF = clamp(CONFIG.building.startFloor, 1, world.N);
@@ -4323,7 +5122,11 @@ function buildSettings() {
       if (v !== 'winter' && CONFIG.env.weather === 'snow') { CONFIG.env.weather = 'cloudy'; world.weather.kind = 'cloudy'; }
     } } },
     { l: 'Погода', c: { type: 'select', value: CONFIG.env.weather, options: WEATHER_KEYS.map((k) => ({ v: k, t: WEATHER_NAME[k] })), onInput: (v) => { CONFIG.env.weather = v; world.weather.kind = v; } } },
-    { l: 'Одежда', c: { type: 'select', value: CONFIG.sprites.player, options: Object.keys(HOODIE_NAME).map((k) => ({ v: k, t: HOODIE_NAME[k] })), onInput: (v) => { CONFIG.sprites.player = v; } } },
+    { l: 'Одежда', c: { type: 'select', value: CONFIG.sprites.player, options: Object.keys(HOODIE_NAME).map((k) => ({ v: k, t: HOODIE_NAME[k] })), onInput: (v) => { CONFIG.sprites.player = v; buildSettings(); } } },
+    /* капюшон есть только у чёрных вещей — и его можно снять */
+    ...(HOOD_SPRITES.includes(CONFIG.sprites.player)
+      ? [{ l: 'Капюшон', c: { type: 'select', value: CONFIG.sprites.hood ? 'on' : 'off', options: [{ v: 'on', t: 'надет' }, { v: 'off', t: 'снят' }], onInput: (v) => { CONFIG.sprites.hood = v === 'on'; } } }]
+      : []),
     { l: 'Звук', c: { type: 'check', value: CONFIG.audio.enabled, onInput: (v) => { SFX.setEnabled(v); syncSoundBtn(); } } },
     { l: 'Экранные кнопки', c: { type: 'select', value: CONFIG.ui.touch, options: [{ v: 'auto', t: 'авто' }, { v: 'on', t: 'всегда' }, { v: 'off', t: 'скрыть' }], onInput: (v) => { CONFIG.ui.touch = v; autoTouchMode(); } } },
     { l: 'Подсказки', c: { type: 'check', value: CONFIG.ui.hints, onInput: (v) => { CONFIG.ui.hints = v; } } },
@@ -4427,20 +5230,72 @@ function closeInfo() {
 }
 
 /* ── терминал ── */
-const TERM_BANNER = [
-  'dom9 bbs — MS-DOS 6.22 / терминал подъезда',
-  'соединение: dialup 14.4k · ночь 1993',
-  'help — список команд',
-];
+const TERM_BANNER = ['dom9 1.0 · диал-ап 14.4k · 1993'];
 function termPrint(text, cls) {
   if (!dom.termOut) return;
   const d = document.createElement('div');
   d.className = 'tl' + (cls ? ' ' + cls : '');
   d.textContent = String(text);
-  dom.termOut.appendChild(d);
+  /* ввод всегда последней строкой — прямо под выводом */
+  if (dom.termLine) dom.termOut.insertBefore(d, dom.termLine);
+  else dom.termOut.appendChild(d);
   dom.termOut.scrollTop = dom.termOut.scrollHeight;
   term.out.push(String(text));
   while (term.out.length > 200) term.out.shift();
+}
+/* приглашение: в оболочке — sanya@dom9:~$, в чате — просто > */
+function termPrompt() {
+  if (!dom.termPs1) return;
+  if (term.net) {
+    dom.termPs1.innerHTML = '<span class="host">' + term.net.user + '@' + term.net.ip + '</span><span class="gt">:</span><span class="path">chat</span><span class="gt">&gt;</span>';
+    if (dom.termTitle) dom.termTitle.textContent = 'nc ' + term.net.ip + ' 4444 — чат дома';
+    return;
+  }
+  const T = CONFIG.terminal;
+  dom.termPs1.innerHTML = '<span class="host">' + T.user + '@' + T.host + '</span><span class="gt">:</span><span class="path">~</span><span class="gt">$</span>';
+  if (dom.termTitle) dom.termTitle.textContent = T.user + '@' + T.host + ': ~ — терминал';
+}
+/* ── локальный чат 90-х: nc <ip> 4444 ── */
+function ncOpen(ip, port) {
+  const p = CONFIG.neighbors.people.find((x) => x.ip === ip);
+  if (term.net) ncClose(true);
+  if (!p) {
+    /* пока подключения нет — никаких ошибок, просто тишина в линии */
+    termPrint('nc ' + ip + (port ? ' ' + port : '') + ' …', 'dim');
+    return;
+  }
+  term.net = { user: p.user, ip: p.ip, name: p.name, id: p.id, t: 0, said: 0 };
+  termPrint('connected to ' + p.ip + ':4444', 'net');
+  termPrint('«' + p.name + ' в сети». пиши, exit — выйти.', 'dim');
+  termPrompt();
+  const hi = (p.chat && p.chat[0]) || (p.knock && p.knock[0]) || 'на связи.';
+  setTimeout(() => { if (term.net && term.net.ip === p.ip) termNetSay(p.name + ': ' + hi); }, 900);
+}
+function ncClose(quiet) {
+  if (!term.net) return;
+  termPrint(quiet ? '— разъединился —' : 'соединение закрыто', 'dim');
+  term.net = null;
+  termPrompt();
+}
+function termNetSay(text) {
+  termPrint(text, 'net');
+  if (dom.termOut) dom.termOut.scrollTop = dom.termOut.scrollHeight;
+}
+/* что ответит сосед на строку в чате */
+function ncReply(net, msg) {
+  const p = CONFIG.neighbors.people.find((x) => x.id === net.id);
+  if (!p) return;
+  const pool = (p.chat && p.chat.slice(1)) || [];
+  const low = String(msg).toLowerCase();
+  let line = null;
+  if (/ключ|отмычк|дверь/.test(low)) line = 'дверь? стучись. или взламывай, если умеешь.';
+  else if (/свет|пробк|щиток/.test(low)) line = 'света нет, щиток в подвале. три пробки — и дом оживёт.';
+  else if (/мишк|пистолет|ствол/.test(low)) line = 'про Мишку не спрашивай. у него ствол и нервы ни к чёрту.';
+  else if (/привет|здоров|хай|йо/.test(low)) line = 'и тебе. чего хотел?';
+  else if (/чердак/.test(low)) line = 'на чердак не лазь. там дверь железная и не наша.';
+  else if (pool.length) line = pool[net.said++ % pool.length];
+  else line = (p.knock && p.knock[net.said++ % Math.max(1, p.knock.length)]) || 'ага.';
+  termNetSay(p.name + ': ' + line);
 }
 function openTerminal() {
   term.open = true;
@@ -4448,11 +5303,12 @@ function openTerminal() {
   show(dom.ovTerm, true);
   veil(true);
   if (!term.out.length) { for (const l of TERM_BANNER) termPrint(l); }
-  if (dom.termPs1) dom.termPs1.textContent = CONFIG.terminal.user + '@' + CONFIG.terminal.host + ':~$';
+  termPrompt();
   setTimeout(() => { try { dom.termIn.focus(); } catch (_) {} }, 60);
   SFX.click();
 }
 function closeTerminal() {
+  if (term.net) { term.net = null; }
   term.open = false;
   show(dom.ovTerm, false);
   veil(false);
@@ -4463,6 +5319,15 @@ function closeTerminal() {
 function termExec(raw) {
   const cmd = String(raw || '').trim();
   if (!cmd) return;
+  /* в чате любая строка — сообщение, а не команда */
+  if (term.net) {
+    termPrint(term.net.user + '@' + term.net.ip + '> ' + cmd, 'echo');
+    term.hist.push(cmd); term.hi = term.hist.length;
+    if (/^(exit|quit|~?\.|bye|пока)$/i.test(cmd)) { ncClose(true); return; }
+    const net = term.net;
+    setTimeout(() => { if (term.net === net) ncReply(net, cmd); }, 500 + Math.random() * 700);
+    return;
+  }
   termPrint(CONFIG.terminal.user + '@' + CONFIG.terminal.host + ':~$ ' + cmd, 'echo');
   term.hist.push(cmd);
   term.hi = term.hist.length;
@@ -4470,7 +5335,13 @@ function termExec(raw) {
   const head = headRaw.toLowerCase();
   const T = CONFIG.terminal;
   if (head === 'help') {
-    termPrint('help                 — этот список\nls                   — файлы\ncat <файл>           — прочитать\nnmap                 — скан сети дома\ncontacts             — известные явки\nssh имя@адрес        — подключиться\npower                — состояние щитка\nwhoami / uname       — кто я\nclear                — очистить\nexit                 — выйти');
+    termPrint('help              — этот список');
+    termPrint('ls / cat <файл>   — файлы дома');
+    termPrint('nmap              — скан сети');
+    termPrint('ssh имя@адрес     — подключиться');
+    termPrint('nc адрес 4444     — чат с соседом');
+    termPrint('contacts          — известные явки');
+    termPrint('power             — щиток · clear · exit');
   } else if (head === 'ls' || head === 'dir') {
     termPrint(Object.keys(T.files).join('   '));
   } else if (head === 'cat' || head === 'type') {
@@ -4499,7 +5370,12 @@ function termExec(raw) {
   } else if (head === 'contacts') {
     if (!world.known.length) termPrint('явок нет. Стучись в двери, читай записки, ищи бумажки.');
     else for (const k of world.known) termPrint('  ' + k.user + '@' + k.ip + '   (' + (k.name || '?') + ')');
-  } else if (head === 'ssh' || head === 'telnet' || head === 'rlogin') {
+  } else if (head === 'nc' || head === 'netcat' || head === 'telnet') {
+    /* локальный чат дома: nc 10.9.3.11 4444 — обычная для девяностых манера */
+    const ip = (args[0] || '').replace(/[^0-9.]/g, '');
+    if (!ip) { termPrint('usage: nc <ip> [port]', 'dim'); return; }
+    ncOpen(ip, args[1]);
+  } else if (head === 'ssh' || head === 'rlogin') {
     const tgt = (args[0] || '').toLowerCase();
     if (!tgt.includes('@')) { termPrint('ssh: формат имя@адрес'); return; }
     const [u, ip] = tgt.split('@');
@@ -4542,6 +5418,42 @@ function termExec(raw) {
 function syncSoundBtn() { if (dom.btnSound) dom.btnSound.setAttribute('aria-pressed', String(!!CONFIG.audio.enabled)); }
 function syncTorchBtn() { if (dom.btnTorch) dom.btnTorch.setAttribute('aria-pressed', String(!!player.torch)); }
 /* ─────────────────────────────── I. ВВОД / ЦИКЛ ──────────────────────────── */
+/* ── экранные кнопки: снять «зажатие», если кнопка исчезла или палец ушёл ── */
+const padHeld = new Set();
+function padBtn(k) { return document.querySelector('[data-k="' + k + '"]'); }
+function padReleaseKey(k) {
+  padHeld.delete(k);
+  const b = padBtn(k);
+  if (b) b.classList.remove('on');
+  if (k === 'ctx') { inputs.act = false; return; }
+  if (k === 'jump') { inputs.jump = false; return; }
+  if (k === 'torch') return;
+  if (k === 'act') {
+    const c = padBtn('ctx');
+    inputs.act = !!(c && c.classList.contains('on'));
+    return;
+  }
+  inputs[k] = false;
+}
+function releasePadAll() { for (const k of Array.from(padHeld)) padReleaseKey(k); }
+/* кнопка пропала из-под пальца (например, [Верх] сменился на [Скользить]) — ввод не залипает */
+function padReleaseHidden() {
+  if (!padHeld.size) return;
+  for (const k of Array.from(padHeld)) {
+    const b = padBtn(k);
+    if (!b) { padReleaseKey(k); continue; }
+    const cs = getComputedStyle(b);
+    if (cs.display === 'none' || cs.visibility === 'hidden' || b.offsetParent === null) padReleaseKey(k);
+  }
+}
+
+/* v6 п.1/п.2: потеря фокуса (свайп-навигация, звонок, смена вкладки) не должна оставлять кнопку «зажатой» */
+function bindPadRelease() {
+  window.addEventListener('blur', releasePadAll);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) releasePadAll(); });
+  window.addEventListener('pointercancel', releasePadAll, true);
+}
+
 function bindInput() {
   const codeMap = {
     ArrowLeft: 'left', KeyA: 'left',
@@ -4588,6 +5500,10 @@ function bindInput() {
     if (e.code === 'KeyQ') { lookAction(); e.preventDefault(); }
     if (e.code === 'KeyL') { const a = nearestAction(); toast(a ? a.label : 'Рядом ничего нет', a ? 'good' : ''); e.preventDefault(); }
     if (e.code === 'KeyM') { SFX.setEnabled(!CONFIG.audio.enabled); syncSoundBtn(); saveSettings(); }
+    if (e.code === 'KeyH' && HOOD_SPRITES.includes(CONFIG.sprites.player)) {
+      CONFIG.sprites.hood = !CONFIG.sprites.hood; saveSettings();
+      toast(CONFIG.sprites.hood ? 'Капюшон надет' : 'Капюшон снят');
+    }
     if (e.code === 'KeyR' && e.shiftKey) { CONFIG.seed = (Math.random() * 900000) | 0; saveSettings(); rebuildHouse('Новый дом: сид ' + CONFIG.seed); }
     if (e.code === 'Tab') {
       e.preventDefault();
@@ -4613,7 +5529,9 @@ function bindInput() {
   const press = (btn, on) => {
     const k = btn.dataset.k;
     btn.classList.toggle('on', on);
-    if (k === 'ctx') { if (on) { inputs.actPressed = true; } return; }
+    if (on) padHeld.add(k); else padHeld.delete(k);
+    /* «Действие» держим — оно же «E»: отмычка и скольжение работают, пока палец на кнопке */
+    if (k === 'ctx') { inputs.act = on; if (on) inputs.actPressed = true; return; }
     if (k === 'act') { inputs.act = on; if (on) lookAction(); return; }
     if (k === 'jump') { inputs.jump = on; if (on) player.jumpBuf = CONFIG.player.jumpBuffer; return; }
     if (k === 'torch') { if (on) toggleTorch(); return; }
@@ -4633,6 +5551,9 @@ function bindInput() {
     btn.addEventListener('pointercancel', up);
     btn.addEventListener('lostpointercapture', up);
   }
+  window.addEventListener('pointerup', () => {
+    for (const k of Array.from(padHeld)) { const b = padBtn(k); if (!b || !b.classList.contains('on')) padReleaseKey(k); }
+  }, true);
   window.addEventListener('touchstart', () => { if (CONFIG.ui.touch !== 'off') document.body.classList.add('touch-mode'); }, { passive: true, once: true });
   autoTouchMode();
 
@@ -4641,6 +5562,7 @@ function bindInput() {
     dom.termIn.addEventListener('keydown', (e) => {
       e.stopPropagation();
       if (e.key === 'Escape') { e.preventDefault(); closeTerminal(); return; }
+      if (e.key === 'c' && e.ctrlKey) { e.preventDefault(); dom.termIn.value = ''; if (term.net) ncClose(true); else termPrint('^C', 'dim'); return; }
       if (e.key === 'Enter') { e.preventDefault(); const v = dom.termIn.value; dom.termIn.value = ''; termExec(v); return; }
       if (e.key === 'ArrowUp') {
         e.preventDefault();
@@ -4742,17 +5664,19 @@ function frame(t) {
 
 function render() {
   const t0 = performance.now();
-  drawSky();
+  drawSkyBase();
   drawCity();
   drawWeather();
   setWorld();
   drawStreet();
   setScreen();
-  captureBackdrop();     /* небо + город + погода + улица — это увидят окна */
+  captureBackdrop();     /* небо + город + погода + улица — это увидят окна (без солнца и луны) */
+  drawCelestial();       /* светило одно — в небе; в стекле окна его больше нет */
   setWorld();
   drawBuilding();
   drawItems();
   drawNpcs();
+  drawSmoke();
   drawEnemies();
   drawBullets();
   drawHero();
@@ -4794,6 +5718,8 @@ function apiState() {
   return {
     mode, floor: player.floor, x: Math.round(player.x), y: Math.round(player.y),
     onGround: player.onGround, onRail: !!player.rail, railF: player.rail ? player.rail.f : -1,
+    railS: player.rail ? Math.round(player.s) : -1, slide: !!player.slide,
+    pick: { t: +(player.pickT || 0).toFixed(2), door: player.pickDoor ? player.pickDoor.id : -1, act: !!inputs.act },
     vy: Math.round(player.vy), nerves: player.nerves, torch: player.torch,
     battery: Math.round(player.battery), fuses: player.fuses, picks: player.picks,
     powers: world.powerStage, keys: player.keys.slice(),
@@ -4825,6 +5751,7 @@ function init() {
   buildWorld(CONFIG.seed);
   bindUi();
   bindInput();
+  bindPadRelease();
   resetRun();
   syncSoundBtn(); syncTorchBtn();
   show(dom.btnContinue, hasSave());
@@ -4861,6 +5788,8 @@ function init() {
       },
       rails: () => world.rails.map((r) => ({ f: r.f, len: Math.round(r.len), y0: Math.round(r.y0), y1: Math.round(r.y1), yMid: Math.round(r.yMid) })),
       items: () => world.items.map((i) => ({ id: i.id, type: i.type, f: i.f, x: Math.round(i.x), y: Math.round(i.y), key: i.key || null, taken: i.taken })),
+      segs: (f) => (world.floors[f] ? world.floors[f].segs.map((q) => ({ idx: q.idx, t: q.t, x: Math.round(q.x), x2: Math.round(q.x2), w: Math.round(q.w) })) : []),
+      windows: () => world.floors.map((fl) => ({ f: fl.f, list: fl.windows.map((w) => ({ x: Math.round(w.x), y: Math.round(w.y), w: Math.round(w.w), h: Math.round(w.h) })) })),
       props: () => world.props.map((q) => ({ id: q.id, kind: q.kind, f: q.f, x: Math.round(q.x), w: Math.round(q.w), h: Math.round(q.h), y: Math.round(q.y), solid: !!q.solid })),
       enemies: () => world.enemies.map((e) => ({ type: e.type, f: e.f, x: Math.round(e.x), dead: e.dead, alert: Number(e.alert.toFixed(2)) })),
       npcs: () => world.npcs.map((n) => ({ id: n.id, name: n.name, f: n.f, x: Math.round(n.x), doorId: n.doorId })),
@@ -4886,9 +5815,42 @@ function init() {
           cond: [player.y <= gateY + 8, player.y > gateY - E.gateH - 14, player.x > E.x - 30, player.x < E.x2 + 30] };
       },
       vertical: () => verticalCtx(),
+      inputs: () => ({ ...inputs, padHeld: Array.from(padHeld || []) }),
       setTime: (k) => { if (TIME_KEYS.includes(k)) { CONFIG.env.time = k; saveSettings(); } },
-      setWeather: (k) => { if (WEATHER_KEYS.includes(k)) { CONFIG.env.weather = k; world.weather.kind = k; saveSettings(); } },
+      setWeather: (k) => {
+        if (!WEATHER_KEYS.includes(k)) return;
+        CONFIG.env.weather = k; world.weather.kind = k;
+        const vars = CONFIG.weathers.variants[k] || [{ p: 0.5, name: k }];
+        const v = vars[vars.length - 1];
+        world.weather.power = v.p; world.weather.name = v.name; world.weather.variant = vars.length - 1;
+        saveSettings();
+      },
+      setWeatherPower: (k, i) => {
+        if (!WEATHER_KEYS.includes(k)) return;
+        const vars = CONFIG.weathers.variants[k] || [{ p: 0.5, name: k }];
+        const idx = clamp(Number(i) || 0, 0, vars.length - 1);
+        CONFIG.env.weather = k; world.weather.kind = k;
+        world.weather.power = vars[idx].p; world.weather.name = vars[idx].name; world.weather.variant = idx;
+      },
+      weather: () => ({ kind: world.weather.kind, power: Number(world.weather.power.toFixed(2)), name: world.weather.name, auto: CONFIG.env.auto }),
+      rollWeather: () => { rollWeather(); return world.weather.name; },
+      npcsInfo: () => world.npcs.map((n) => ({ id: n.id, f: n.f, x: Math.round(n.x), y: Math.round(n.y), mode: n.mode, smoking: !!n.smoking, door: n.doorId, pi: n.pi | 0, path: n.path ? n.path.length : 0, timer: Math.round(n.timer || 0) })),
+      npcForce: (id, mode) => {
+        const n = world.npcs.find((z) => z.id === id);
+        if (!n) return false;
+        /* 'out' — просто «выпускаем» из дома: маршрут построит обычный апдейт NPC */
+        if (mode === 'out') { n.mode = 'home'; n.timer = 0; return true; }
+        n.mode = mode;
+        n.timer = mode === 'home' ? 9999 : 0.01;
+        if (mode === 'home') { n.x = n.homeX; n.y = floorBaseY(n.homeF); npcSetDoor(n, false); }
+        return true;
+      },
+      smoke: () => world.smoke.length,
+      geom: () => ({ W: world.W, sa: world.sa, sb: world.sb, midEnd: world.midEnd, pitch: world.pitch, xs: world.xs, cam: { x: Math.round(cam.x), y: Math.round(cam.y), z: +cam.z.toFixed(3) }, midY: world.rails.map((r) => r && Math.round(r.yMid)), smoke: (world.smoke || []).slice(-4).map((p) => [Math.round(p.x), Math.round(p.y), +p.t.toFixed(1), +p.r.toFixed(1)]) }),
+      bandit: () => { const e = world.enemies.find((z) => z.type === 'bandit'); return e ? { f: e.f, x: Math.round(e.x), y: Math.round(e.y), outing: !!e.outing, mode: Math.round(e.modeT || 0), outF: e.outF, pi: e.pi || 0, path: e.path ? e.path.length : 0 } : null; },
+      banditNow: () => { const e = world.enemies.find((z) => z.type === 'bandit'); if (e) { e.modeT = 0; } },
       setSprite: (k) => { if (HOODIE_NAME[k]) { CONFIG.sprites.player = k; saveSettings(); } },
+      setHood: (v) => { CONFIG.sprites.hood = !!v; saveSettings(); },
       setFloorsOnScreen: (n) => { CONFIG.display.floorsOnScreen = clamp(Number(n) || 3, 2, 5); cam.snap = true; },
       zoom: () => cam.z,
       darkness: (v) => { CONFIG.light.darkness = clamp(Number(v) || 0, 0, 0.98); },
@@ -4914,5 +5876,5 @@ function init() {
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
 else init();
 })();
-</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a511742bef938096',t:'MTc5MzEwMTUxOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</script></body>
 </html>
