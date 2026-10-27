@@ -1,0 +1,4103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#07060d">
+<!-- Полная автономия: только инлайн-стили/скрипты, никаких внешних запросов. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; media-src data:; base-uri 'none'; form-action 'none'">
+<title>ПРОБКИ — дом 9, ночь без света</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230b0918'/%3E%3Crect x='6' y='4' width='20' height='26' fill='%23131124' stroke='%23ffcf6b' stroke-width='1.5'/%3E%3Crect x='10' y='8' width='4' height='4' fill='%23ffcf6b'/%3E%3Crect x='18' y='8' width='4' height='4' fill='%23ffcf6b'/%3E%3Crect x='10' y='15' width='4' height='4' fill='%2352e0c0'/%3E%3Crect x='18' y='15' width='4' height='4' fill='%23ff4d7a'/%3E%3Crect x='10' y='22' width='4' height='4' fill='%23ffcf6b'/%3E%3Crect x='18' y='22' width='4' height='4' fill='%234a3fa0'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --ink:#07060d; --ink2:#0c0a18; --panel:#131024;
+    --lamp:#ffcf6b; --lamp2:#ffb43d; --acid:#b8ff4d; --mint:#52e0c0;
+    --rose:#ff4d7a; --violet:#8a63ff; --paper:#efe6cf; --dim:#8d86a8;
+    --mono: ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    --pixel: "Courier New", Courier, var(--mono);
+  }
+  *,*::before,*::after{ box-sizing:border-box; }
+  html,body{ height:100%; margin:0; }
+  body{
+    background:#05040a; color:var(--paper); font-family:var(--mono);
+    overflow:hidden; overscroll-behavior:none; user-select:none; -webkit-user-select:none;
+    -webkit-tap-highlight-color:transparent; touch-action:none;
+  }
+  [hidden]{ display:none !important; }
+  .sr{ position:absolute!important; width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0; }
+  :focus-visible{ outline:2px dashed var(--mint); outline-offset:3px; }
+
+  #game{ position:fixed; inset:0; width:100%; height:100%; display:block; touch-action:none; cursor:default; }
+  .fx{ position:fixed; inset:0; pointer-events:none; z-index:3; }
+  .fx-vig{ background:radial-gradient(120% 90% at 50% 50%, transparent 42%, rgba(0,0,0,.55) 82%, #000 100%); }
+  .fx-scan{ background:repeating-linear-gradient(to bottom, rgba(0,0,0,.20) 0 1px, transparent 1px 3px); opacity:.45; mix-blend-mode:multiply; }
+  .fx-grain{ opacity:.05; mix-blend-mode:overlay; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.9'/%3E%3C/svg%3E"); }
+
+  /* ───────────── HUD ───────────── */
+  .hud{ position:fixed; inset:0 0 auto 0; z-index:10; display:flex; justify-content:space-between;
+        align-items:flex-start; gap:10px; padding:clamp(8px,1.6vw,16px); pointer-events:none; }
+  .hud > *{ pointer-events:auto; }
+  .hud__left{ display:flex; flex-direction:column; gap:7px; align-items:flex-start; }
+  .tag{
+    display:inline-flex; align-items:center; gap:7px; padding:5px 9px; font-size:10px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--paper); background:rgba(10,8,20,.72);
+    border:1px solid rgba(255,255,255,.10); backdrop-filter:blur(6px);
+  }
+  .tag b{ color:var(--lamp); font-weight:700; letter-spacing:.06em; }
+  .hearts{ display:flex; gap:5px; align-items:center; }
+  .heart{ width:13px; height:13px; transform:rotate(45deg); background:#2a2440; box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); transition:background .18s, box-shadow .18s; }
+  .heart.on{ background:var(--rose); box-shadow:0 0 12px -2px var(--rose), inset 0 0 0 1px rgba(255,255,255,.25); }
+  .heart.pulse{ animation:heartPulse .5s ease-out; }
+  @keyframes heartPulse{ 0%{ transform:rotate(45deg) scale(1.5); } 100%{ transform:rotate(45deg) scale(1); } }
+  .battery{ display:flex; align-items:center; gap:6px; font-size:9px; letter-spacing:.16em; color:var(--dim); text-transform:uppercase; }
+  .battery__bar{ width:64px; height:7px; border:1px solid rgba(255,255,255,.22); padding:1px; }
+  .battery__fill{ height:100%; width:100%; background:var(--acid); transition:width .2s linear, background .3s; }
+  .battery.low .battery__fill{ background:var(--rose); }
+  .fuses{ display:flex; gap:4px; }
+  .fuse-pip{ width:9px; height:16px; border-radius:2px; background:#221c38; box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); position:relative; }
+  .fuse-pip.on{ background:linear-gradient(180deg,#ffe9a8,#ffb43d); box-shadow:0 0 12px -1px var(--lamp2); }
+  .hud__right{ display:flex; gap:6px; }
+  .icobtn{
+    width:34px;height:34px; display:grid;place-items:center; cursor:pointer; padding:0; line-height:1;
+    color:var(--paper); background:rgba(10,8,20,.72); border:1px solid rgba(255,255,255,.14);
+    font-size:14px; transition:.15s; backdrop-filter:blur(6px);
+  }
+  .icobtn:hover{ border-color:var(--lamp); color:var(--lamp); background:rgba(255,207,107,.10); }
+  .icobtn[aria-pressed="false"]{ opacity:.42; }
+
+  /* ───────────── тосты и подсказки ───────────── */
+  .toasts{ position:fixed; left:50%; top:clamp(56px,9vh,92px); transform:translateX(-50%); z-index:12;
+           display:flex; flex-direction:column; gap:6px; align-items:center; pointer-events:none; width:min(92vw,540px); }
+  .toast{
+    padding:7px 13px; font-size:11.5px; letter-spacing:.06em; text-align:center; color:var(--paper);
+    background:rgba(14,11,26,.9); border:1px solid rgba(255,207,107,.28);
+    box-shadow:0 10px 40px -18px #000; animation:toastIn .22s ease-out both;
+  }
+  .toast.bad{ border-color:rgba(255,77,122,.5); color:#ffd6e0; }
+  .toast.good{ border-color:rgba(184,255,77,.45); color:#eaffc9; }
+  .toast.out{ animation:toastOut .35s ease-in both; }
+  @keyframes toastIn{ from{ opacity:0; transform:translateY(-8px) scale(.97);} to{ opacity:1; transform:none;} }
+  @keyframes toastOut{ to{ opacity:0; transform:translateY(-6px);} }
+
+  .prompt{
+    position:fixed; left:50%; bottom:clamp(64px,11vh,104px); transform:translateX(-50%); z-index:12;
+    display:flex; align-items:center; gap:8px; padding:8px 14px; font-size:12px; letter-spacing:.05em;
+    background:rgba(10,8,20,.86); border:1px solid rgba(184,255,77,.35); color:#eaffc9;
+    box-shadow:0 0 40px -18px var(--acid); animation:toastIn .15s ease-out both; white-space:nowrap;
+  }
+  .prompt kbd{
+    display:inline-grid; place-items:center; min-width:20px; height:20px; padding:0 5px;
+    font:700 11px/1 var(--mono); color:#0a0f02; background:var(--acid); border-radius:2px;
+  }
+
+  /* ───────────── мобильные кнопки ───────────── */
+  .touch{ position:fixed; inset:auto 0 0 0; z-index:14; display:none; justify-content:space-between;
+          align-items:flex-end; padding:0 clamp(10px,3vw,22px) clamp(10px,3vw,22px); pointer-events:none; }
+  .touch > *{ pointer-events:auto; }
+  .touch__pad{ display:grid; grid-template-columns:repeat(3,52px); grid-template-rows:repeat(2,52px); gap:6px; }
+  .touch__act{ display:grid; grid-template-columns:repeat(2,54px); grid-template-rows:repeat(2,54px); gap:6px; }
+  .tbtn{
+    display:grid; place-items:center; font:800 15px/1 var(--mono); color:var(--paper);
+    background:rgba(16,13,30,.74); border:1px solid rgba(255,255,255,.16); border-radius:8px;
+    backdrop-filter:blur(6px); touch-action:none; padding:0; cursor:pointer;
+  }
+  .tbtn.on{ background:rgba(255,207,107,.26); border-color:var(--lamp); color:#fff6dd; }
+  .tbtn--wide{ grid-column:span 2; }
+  body.touch-mode .touch{ display:flex; }
+  body.touch-mode .prompt{ bottom:150px; }
+
+  /* ───────────── оверлеи ───────────── */
+  .overlay{
+    position:fixed; inset:0; z-index:30; display:grid; place-items:center; padding:18px;
+    background:radial-gradient(110% 90% at 50% 30%, rgba(12,10,24,.82), rgba(4,3,8,.96));
+    backdrop-filter:blur(7px); overflow:auto;
+  }
+  .card{
+    width:min(680px, 96vw); padding:clamp(16px,3vw,30px);
+    background:linear-gradient(180deg, rgba(21,17,38,.97), rgba(9,7,17,.99));
+    border:1px solid rgba(255,207,107,.24);
+    box-shadow:0 50px 140px -60px #000, inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .title{
+    margin:0; font-family:var(--pixel); font-size:clamp(34px,8vw,74px); line-height:.92; letter-spacing:.04em;
+    color:#fff3d4; text-shadow:0 0 26px rgba(255,207,107,.45), 3px 3px 0 #7a3d00, -2px -2px 0 #2c1a4d;
+  }
+  .title small{ display:block; margin-top:6px; font-size:clamp(10px,2.2vw,14px); letter-spacing:.42em; color:var(--mint); text-shadow:none; }
+  .lead{ margin:14px 0 0; font-size:12.5px; line-height:1.7; color:#c8c1dd; }
+  .lead b{ color:var(--lamp); }
+  .keys{ display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr)); gap:6px 14px; margin:16px 0 0; font-size:11px; color:#b8b0cc; }
+  .keys div{ display:flex; gap:8px; align-items:center; }
+  .keys kbd{ display:inline-grid; place-items:center; min-width:22px; height:20px; padding:0 5px; font:700 10px/1 var(--mono);
+             color:#0a0f02; background:var(--lamp); border-radius:2px; }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:20px; }
+  .btn{
+    flex:1 1 auto; min-width:130px; padding:13px 18px; cursor:pointer; font:700 12px/1 var(--mono);
+    letter-spacing:.16em; text-transform:uppercase; color:#0b0912; background:var(--lamp);
+    border:1px solid var(--lamp); transition:.15s;
+  }
+  .btn:hover{ background:#ffdf95; box-shadow:0 0 34px -12px var(--lamp); }
+  .btn--ghost{ background:transparent; color:var(--paper); border-color:rgba(255,255,255,.2); }
+  .btn--ghost:hover{ background:rgba(255,255,255,.07); box-shadow:none; border-color:var(--mint); color:#dfffee; }
+  .stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:1px; margin:18px 0 0;
+          background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.09); }
+  .stat{ padding:10px 12px; background:#0d0a19; display:flex; justify-content:space-between; gap:8px; align-items:baseline; }
+  .stat dt{ font-size:9px; letter-spacing:.16em; text-transform:uppercase; color:var(--dim); }
+  .stat dd{ margin:0; font-size:15px; font-weight:700; color:var(--lamp); font-variant-numeric:tabular-nums; }
+
+  /* настройки */
+  .set{ display:grid; gap:12px; margin-top:16px; }
+  .set__row{ display:grid; grid-template-columns:1fr auto; gap:4px 12px; align-items:center; }
+  .set__row label{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#bfb7d6; }
+  .set__row output{ font-size:12px; color:var(--lamp); font-variant-numeric:tabular-nums; }
+  .set__row input[type=range]{ grid-column:1/-1; width:100%; accent-color:#ffcf6b; height:18px; }
+  .set__hint{ grid-column:1/-1; font-size:10px; color:#6e6786; line-height:1.5; }
+  .checks{ display:flex; gap:14px; flex-wrap:wrap; margin-top:4px; }
+  .checks label{ display:flex; gap:7px; align-items:center; font-size:11px; letter-spacing:.08em; color:#c2bad9; cursor:pointer; }
+  .checks input{ accent-color:#ffcf6b; width:15px; height:15px; }
+  .seedbox{ display:flex; gap:8px; align-items:center; margin-top:6px; }
+  .seedbox input{
+    width:120px; padding:8px 10px; font:700 12px/1 var(--mono); letter-spacing:.1em; color:var(--lamp);
+    background:#080611; border:1px solid rgba(255,207,107,.3);
+  }
+  .fineprint{ margin-top:14px; font-size:10px; line-height:1.6; color:#6b6482; }
+
+  @media (max-width:560px){
+    .tag{ font-size:9px; padding:4px 7px; }
+    .keys{ grid-template-columns:1fr 1fr; }
+    .hud{ padding:8px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .heart.pulse{ animation:none; }
+    .toast{ animation:none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="game" aria-label="Игровое поле: разрез девятиэтажного дома"></canvas>
+<div class="fx fx-vig"></div>
+<div class="fx fx-scan"></div>
+<div class="fx fx-grain"></div>
+
+<header class="hud">
+  <div class="hud__left">
+    <div class="tag" id="floorTag"><b id="floorText">этаж 9</b> · <span id="placeName">лестница</span></div>
+    <div class="hearts" id="hearts" aria-label="Нервы"></div>
+    <div class="battery" id="batteryWrap">
+      <span>фонарь</span>
+      <div class="battery__bar"><div class="battery__fill" id="batteryFill"></div></div>
+      <span id="batteryPct">100%</span>
+    </div>
+    <div class="fuses" id="fusePips" aria-label="Пробки"></div>
+  </div>
+  <div class="hud__right">
+    <button class="icobtn" id="btnSound" type="button" aria-pressed="true" title="Звук (M)" aria-label="Звук">♪</button>
+    <button class="icobtn" id="btnTorch" type="button" aria-pressed="false" title="Фонарь (F)" aria-label="Фонарь">✦</button>
+    <button class="icobtn" id="btnSet" type="button" title="Настройки (F1)" aria-label="Настройки">⚙</button>
+    <button class="icobtn" id="btnPause" type="button" title="Пауза (Esc)" aria-label="Пауза">❚❚</button>
+  </div>
+</header>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<div class="prompt" id="prompt" hidden></div>
+
+<div class="touch" id="touch">
+  <div class="touch__pad">
+    <button class="tbtn" data-k="left" aria-label="Влево">◀</button>
+    <button class="tbtn" data-k="up" aria-label="Вверх / прыжок">▲</button>
+    <button class="tbtn" data-k="right" aria-label="Вправо">▶</button>
+    <button class="tbtn tbtn--wide" data-k="down" aria-label="Вниз">▼</button>
+  </div>
+  <div class="touch__act">
+    <button class="tbtn" data-k="torch" aria-label="Фонарь">✦</button>
+    <button class="tbtn" data-k="act" aria-label="Действие">E</button>
+  </div>
+</div>
+
+<!-- ── старт ── -->
+<section class="overlay" id="ovStart">
+  <div class="card">
+    <h1 class="title">ПРОБКИ<small>дом №9 · ночь без света</small></h1>
+    <p class="lead">Ты — <b>Санёк</b> из сорок третьей. В доме выбило пробки, лифт стоит, бабки на площадке уже
+      раскачиваются. Где-то в подвале — <b>щиток</b>, а по этажам раскиданы три пробки.
+      Найди их, вставь в щиток и верни свет. Только не свети Бабаю в глаза… хотя, наоборот — свети.</p>
+    <div class="keys" aria-label="Управление">
+      <div><kbd>A</kbd><kbd>D</kbd><span>идти</span></div>
+      <div><kbd>Space</kbd><span>прыжок</span></div>
+      <div><kbd>W</kbd><kbd>S</kbd><span>лестницы</span></div>
+      <div><kbd>E</kbd><span>действие</span></div>
+      <div><kbd>F</kbd><span>фонарь</span></div>
+      <div><kbd>Esc</kbd><span>пауза</span></div>
+    </div>
+    <div class="row">
+      <button class="btn" id="btnPlay" type="button">В дом</button>
+      <button class="btn btn--ghost" id="btnSetStart" type="button">Настройки</button>
+    </div>
+    <p class="fineprint">Дом генерируется по сиду: один и тот же сид — один и тот же дом. Всё настраивается в
+      <b>CONFIG</b> в коде и в панели настроек (F1).</p>
+  </div>
+</section>
+
+<!-- ── пауза ── -->
+<section class="overlay" id="ovPause" hidden>
+  <div class="card">
+    <h1 class="title" style="font-size:clamp(26px,6vw,46px)">ПАУЗА<small>дом ждёт</small></h1>
+    <div class="row">
+      <button class="btn" id="btnResume" type="button">Продолжить</button>
+      <button class="btn btn--ghost" id="btnSetPause" type="button">Настройки</button>
+      <button class="btn btn--ghost" id="btnRestart" type="button">Заново</button>
+    </div>
+    <p class="fineprint">Совет: в темноте стены режут луч фонаря — прислушивайся и свети заранее.</p>
+  </div>
+</section>
+
+<!-- ── настройки ── -->
+<section class="overlay" id="ovSet" hidden>
+  <div class="card">
+    <h1 class="title" style="font-size:clamp(22px,5vw,38px)">МАСТЕРСКАЯ<small>крути как хочешь</small></h1>
+    <div class="set" id="setRows"></div>
+    <div class="checks" style="margin-top:14px">
+      <label><input type="checkbox" id="chkRain"> дождь</label>
+      <label><input type="checkbox" id="chkGrain"> зерно/скан-линии</label>
+      <label><input type="checkbox" id="chkHints"> подсказки</label>
+    </div>
+    <div class="seedbox">
+      <span style="font-size:11px;color:#bfb7d6;letter-spacing:.1em">СИД ДОМА</span>
+      <input id="seedInput" type="text" inputmode="numeric" maxlength="9" aria-label="Сид дома">
+      <button class="btn btn--ghost" id="btnReroll" type="button" style="flex:0 0 auto;min-width:0;padding:9px 12px">Новый дом</button>
+    </div>
+    <div class="row">
+      <button class="btn" id="btnSetClose" type="button">Готово</button>
+      <button class="btn btn--ghost" id="btnSetReset" type="button">Сбросить</button>
+    </div>
+    <p class="fineprint">Часть значений применяется сразу, «сид» и «этажи» — после перезапуска дома.</p>
+  </div>
+</section>
+
+<!-- ── финал ── -->
+<section class="overlay" id="ovEnd" hidden>
+  <div class="card">
+    <h1 class="title" id="endTitle">СВЕТ ЕСТЬ<small id="endSub">дом ожил</small></h1>
+    <p class="lead" id="endText">Щёлк — и весь дом разом выдохнул: лампы в подъезде, телевизоры, гирлянда на девятом.
+      Где-то наверху захлопнулась дверь, и Бабай уполз под лестницу.</p>
+    <dl class="stats" id="endStats"></dl>
+    <div class="row">
+      <button class="btn" id="btnAgain" type="button">Ещё раз</button>
+      <button class="btn btn--ghost" id="btnNewHouse" type="button">Новый дом</button>
+    </div>
+  </div>
+</section>
+
+<script>
+(() => {
+'use strict';
+/* ═══════════════════════════════════════════════════════════════════════════
+   ПРОБКИ — дом №9. Один файл, ноль зависимостей, ноль сети.
+   Структура файла:
+     A. CONFIG      — всё, что можно крутить (дом, персонаж, свет, враги, звук)
+     B. УТИЛИТЫ      — рандом с сидом, геометрия, канвас
+     C. ЗВУК         — процедурный WebAudio, без файлов
+     D. МИР          — генерация дома: этажи, комнаты, коридоры, лестницы, лифт
+     E. ИГРОК        — физика, лестницы, фонарь, урон
+     F. СУЩНОСТИ     — бабки, собаки, Бабай, NPC, предметы, щиток
+     G. РЕНДЕР       — параллакс, разрез дома, свет, эффекты
+     H. ЦИКЛ         — update/render, камера, HUD, ввод
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ───────────────────────────── A. CONFIG ─────────────────────────────────── */
+const DEFAULT_CONFIG = {
+  seed: 1993,
+  building: {
+    floors: 9,                 // жилых этажей (плюс подвал). 6–14 разумно
+    width: 2300,               // ширина дома в юнитах
+    floorH: 68,                // высота одного этажа
+    slabH: 9,                  // толщина перекрытия
+    stairW: 210,               // ширина лестничной клетки слева и справа
+    startFloor: 9,             // с какого этажа начинаем
+    layout: [                  // план этажа: коридоры и комнаты подряд
+      { t: 'corr', w: 190 },
+      { t: 'room', w: 230 },
+      { t: 'corr', w: 190 },
+      { t: 'room', w: 240 },
+      { t: 'corr', w: 190, elevator: true },
+      { t: 'room', w: 240 },
+      { t: 'corr', w: 190 },
+      { t: 'room', w: 230 },
+    ],
+    doorW: 28,                 // проём в комнату
+    doorH: 42,
+    elevator: { w: 80, carW: 64, carH: 44, speed: 190, gateH: 40 },
+  },
+  player: {
+    w: 13, h: 25,
+    run: 152, accel: 1500, friction: 2000, airAccel: 820,
+    jump: 424, gravity: 1360, maxFall: 780,
+    climb: 96, coyote: 0.1, jumpBuffer: 0.12,
+    nerves: 3, invuln: 1.2, knockX: 190, knockY: 210,
+    torchRange: 215, torchSpread: 0.52, torchDrain: 2.3,   // %/сек
+  },
+  light: {
+    darkness: 0.74,            // 0..1 — насколько темно без света
+    ambientR: 26,              // радиус «чутья» вокруг игрока
+    lampRadius: 92,
+    candleR: 46,
+  },
+  world: {
+    itemDensity: 1,            // множитель предметов
+    enemyDensity: 1,           // множитель врагов
+    rain: true,
+    grain: true,
+    hints: true,
+    parallax: 1,               // множитель параллакса
+  },
+  enemies: {
+    granny: { speed: 27, sight: 135, w: 16, h: 24, dmg: 1 },
+    dog:    { speed: 50, sight: 110, w: 20, h: 15, dmg: 1 },
+    babay:  { speed: 26, w: 16, h: 30, dmg: 1, freeze: 0.35 },
+  },
+  camera: { smooth: 6.5, lookAhead: 60, overscroll: 300, zoomMin: 1.25, zoomMax: 2.3 },
+  audio: { enabled: true, volume: 0.5 },
+  fx: { particles: 260, shake: 1 },
+  palette: {
+    night: ['#0a0817', '#0d0b1e', '#12102a'],
+    neon: ['#ff4d7a', '#52e0c0', '#8a63ff', '#ffcf6b'],
+    wallpaper: ['#2a2f4a', '#3a2c32', '#243a34', '#39302a', '#2c2440', '#343a28'],
+    corridor: ['#2b3a35', '#333446', '#3a2f2a', '#242f42'],
+  },
+};
+
+/* Глубокая копия через JSON безопасна: в конфиге только данные. */
+const CONFIG = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+
+const LS_KEY = 'probs:v1';
+let persisted = { seed: CONFIG.seed, sound: true };
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+    const o = JSON.parse(raw);
+    if (!o || typeof o !== 'object') return;
+    if (Number.isInteger(o.seed)) CONFIG.seed = clamp(o.seed, 0, 999999999);
+    if (typeof o.sound === 'boolean') CONFIG.audio.enabled = o.sound;
+    if (o.world && typeof o.world === 'object') {
+      for (const k of ['itemDensity', 'enemyDensity', 'rain', 'grain', 'hints', 'parallax']) {
+        if (typeof o.world[k] === typeof CONFIG.world[k]) CONFIG.world[k] = o.world[k];
+      }
+    }
+    if (o.light && Number.isFinite(o.light.darkness)) CONFIG.light.darkness = clamp(o.light.darkness, 0, 0.98);
+  } catch (_) { /* приватный режим / битые данные — дефолты */ }
+  persisted.sound = CONFIG.audio.enabled;
+}
+function saveSettings() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      seed: CONFIG.seed,
+      sound: CONFIG.audio.enabled,
+      world: { itemDensity: CONFIG.world.itemDensity, enemyDensity: CONFIG.world.enemyDensity,
+               rain: CONFIG.world.rain, grain: CONFIG.world.grain, hints: CONFIG.world.hints,
+               parallax: CONFIG.world.parallax },
+      light: { darkness: CONFIG.light.darkness },
+    }));
+  } catch (_) { /* не критично */ }
+}
+
+/* ───────────────────────────── B. УТИЛИТЫ ────────────────────────────────── */
+const TAU = Math.PI * 2;
+const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+const clamp01 = (v) => clamp(v, 0, 1);
+const lerp = (a, b, t) => a + (b - a) * t;
+const smooth = (t) => t * t * (3 - 2 * t);
+const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+const sign = (v) => (v < 0 ? -1 : v > 0 ? 1 : 0);
+const nowMs = () => performance.now();
+
+/* Детерминированный ГПСЧ (mulberry32) — дом всегда одинаков по сиду. */
+function hashSeed(str) {
+  let h = 2166136261 >>> 0;
+  const s = String(str);
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  return h >>> 0;
+}
+function makeRng(seedValue) {
+  let a = (typeof seedValue === 'number' ? seedValue : hashSeed(seedValue)) >>> 0;
+  const next = () => {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  return {
+    next,
+    range: (lo, hi) => lo + next() * (hi - lo),
+    int: (lo, hi) => Math.floor(lo + next() * (hi - lo + 1)),
+    pick: (arr) => arr[Math.floor(next() * arr.length)],
+    chance: (p) => next() < p,
+    shuffle: (arr) => {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(next() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    },
+  };
+}
+
+const AABB = (x, y, w, h) => ({ x, y, w, h });
+const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+const inRect = (x, y, r) => x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
+const rectCenter = (r) => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
+
+/* Пересечение луча с AABB (slab-метод). Возвращает дистанцию до стены или maxT. */
+function rayRect(ox, oy, dx, dy, r, maxT) {
+  const invx = dx === 0 ? 1e9 : 1 / dx;
+  const invy = dy === 0 ? 1e9 : 1 / dy;
+  let tmin = 0, tmax = maxT;
+  let t1 = (r.x - ox) * invx, t2 = (r.x + r.w - ox) * invx;
+  if (t1 > t2) { const q = t1; t1 = t2; t2 = q; }
+  tmin = Math.max(tmin, t1); tmax = Math.min(tmax, t2);
+  if (tmin > tmax) return maxT;
+  t1 = (r.y - oy) * invy; t2 = (r.y + r.h - oy) * invy;
+  if (t1 > t2) { const q = t1; t1 = t2; t2 = q; }
+  tmin = Math.max(tmin, t1); tmax = Math.min(tmax, t2);
+  if (tmin > tmax) return maxT;
+  return tmin;
+}
+
+/* Цвета с альфой: rgba('#ffcf6b', .3) */
+function withAlpha(hex, a) {
+  const h = hex.replace('#', '');
+  const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+  const n = parseInt(full, 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+}
+function shade(hex, k) {
+  const h = hex.replace('#', '');
+  const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+  const n = parseInt(full, 16);
+  const r = clamp(Math.round(((n >> 16) & 255) * k), 0, 255);
+  const g = clamp(Math.round(((n >> 8) & 255) * k), 0, 255);
+  const b = clamp(Math.round((n & 255) * k), 0, 255);
+  return `rgb(${r},${g},${b})`;
+}
+
+const $ = (s, root = document) => root.querySelector(s);
+const $$ = (s, root = document) => Array.from(root.querySelectorAll(s));
+const pad2 = (n) => (n < 10 ? '0' + n : '' + n);
+function fmtTime(sec) {
+  sec = Math.max(0, Math.floor(sec));
+  return Math.floor(sec / 60) + ':' + pad2(sec % 60);
+}
+
+/* ───────────────────────────── C. ЗВУК ───────────────────────────────────── */
+class Sound {
+  constructor() {
+    this.ctx = null; this.master = null; this.noise = null;
+    this.enabled = true; this.volume = 0.5; this.failed = false;
+    this.ambient = null;
+    this.lastStep = 0;
+  }
+  unlock() {
+    if (this.ctx) { if (this.ctx.state !== 'running') this.ctx.resume().catch(() => {}); return true; }
+    if (this.failed) return false;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) { this.failed = true; return false; }
+    try {
+      this.ctx = new AC();
+      const comp = this.ctx.createDynamicsCompressor();
+      comp.threshold.value = -18; comp.ratio.value = 4; comp.attack.value = 0.003; comp.release.value = 0.25;
+      this.master = this.ctx.createGain();
+      this.master.gain.value = this.enabled ? this.volume : 0.0001;
+      this.master.connect(comp); comp.connect(this.ctx.destination);
+      const len = Math.floor(this.ctx.sampleRate * 1.0);
+      const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      this.noise = buf;
+      if (this.ctx.state !== 'running') this.ctx.resume().catch(() => {});
+      return true;
+    } catch (_) { this.failed = true; return false; }
+  }
+  setEnabled(on) {
+    this.enabled = on;
+    if (this.master && this.ctx) this.master.gain.setTargetAtTime(on ? this.volume : 0.0001, this.ctx.currentTime, 0.05);
+  }
+  tone({ freq = 220, freqEnd = 0, dur = 0.2, gain = 0.12, type = 'sine', delay = 0, attack = 0.01 }) {
+    if (!this.ctx || !this.enabled) return;
+    const c = this.ctx, t0 = c.currentTime + delay;
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(Math.max(20, freq), t0);
+    if (freqEnd) o.frequency.exponentialRampToValueAtTime(Math.max(20, freqEnd), t0 + dur);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0002, gain), t0 + attack);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(this.master);
+    o.start(t0); o.stop(t0 + dur + 0.05);
+  }
+  hiss({ dur = 0.2, gain = 0.1, freq = 1200, freqEnd = 0, q = 1, type = 'bandpass', delay = 0 }) {
+    if (!this.ctx || !this.enabled || !this.noise) return;
+    const c = this.ctx, t0 = c.currentTime + delay;
+    const src = c.createBufferSource(); src.buffer = this.noise;
+    const f = c.createBiquadFilter(); f.type = type; f.Q.value = q;
+    f.frequency.setValueAtTime(freq, t0);
+    if (freqEnd) f.frequency.exponentialRampToValueAtTime(Math.max(40, freqEnd), t0 + dur);
+    const g = c.createGain();
+    g.gain.setValueAtTime(Math.max(0.0002, gain), t0);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    src.connect(f); f.connect(g); g.connect(this.master);
+    src.start(t0); src.stop(t0 + dur + 0.03);
+  }
+  step(material) {
+    const t = nowMs();
+    if (t - this.lastStep < 120) return;
+    this.lastStep = t;
+    if (material === 'carpet') this.hiss({ dur: 0.06, gain: 0.05, freq: 700, q: 1, type: 'lowpass' });
+    else if (material === 'stairs') { this.hiss({ dur: 0.07, gain: 0.07, freq: 1500, q: 2 }); this.tone({ freq: 150, dur: 0.05, gain: 0.04, type: 'square' }); }
+    else this.hiss({ dur: 0.05, gain: 0.055, freq: 1100, q: 1.4 });
+  }
+  jump() { this.tone({ freq: 330, freqEnd: 520, dur: 0.14, gain: 0.06, type: 'triangle' }); }
+  land() { this.hiss({ dur: 0.1, gain: 0.09, freq: 500, q: 0.8, type: 'lowpass' }); }
+  pickup() { this.tone({ freq: 660, dur: 0.09, gain: 0.08, type: 'square' }); this.tone({ freq: 990, dur: 0.1, gain: 0.06, type: 'square', delay: 0.07 }); }
+  fuse() { this.tone({ freq: 180, freqEnd: 900, dur: 0.35, gain: 0.11, type: 'sawtooth' }); this.hiss({ dur: 0.3, gain: 0.09, freq: 3000, freqEnd: 400, q: 3 }); }
+  hurt() {
+    this.tone({ freq: 200, freqEnd: 70, dur: 0.35, gain: 0.16, type: 'sawtooth' });
+    this.hiss({ dur: 0.25, gain: 0.11, freq: 900, freqEnd: 200, q: 1 });
+  }
+  granny() { this.tone({ freq: 420, freqEnd: 300, dur: 0.18, gain: 0.07, type: 'square' }); this.tone({ freq: 350, freqEnd: 260, dur: 0.2, gain: 0.06, type: 'square', delay: 0.12 }); }
+  dog() { this.tone({ freq: 180, freqEnd: 120, dur: 0.08, gain: 0.09, type: 'square' }); this.tone({ freq: 160, freqEnd: 110, dur: 0.08, gain: 0.07, type: 'square', delay: 0.11 }); }
+  babay() { this.hiss({ dur: 0.5, gain: 0.07, freq: 2400, freqEnd: 300, q: 6 }); this.tone({ freq: 90, freqEnd: 60, dur: 0.5, gain: 0.05, type: 'sine' }); }
+  ding() { this.tone({ freq: 880, dur: 0.25, gain: 0.09, type: 'sine' }); this.tone({ freq: 1320, dur: 0.35, gain: 0.06, type: 'sine', delay: 0.12 }); }
+  power() {
+    [196, 246.9, 293.7, 392, 493.9].forEach((f, i) => this.tone({ freq: f, dur: 1.5, gain: 0.07, type: 'sawtooth', delay: i * 0.07 }));
+    this.hiss({ dur: 1.2, gain: 0.12, freq: 200, freqEnd: 4000, q: 2 });
+    this.tone({ freq: 70, dur: 0.8, gain: 0.12, type: 'sine' });
+  }
+  door() { this.hiss({ dur: 0.4, gain: 0.06, freq: 300, freqEnd: 900, q: 4 }); this.tone({ freq: 120, freqEnd: 90, dur: 0.3, gain: 0.05, type: 'triangle' }); }
+  ambientOn() {
+    if (!this.ctx || !this.enabled || this.ambient) return;
+    const c = this.ctx;
+    const g = c.createGain(); g.gain.value = 0.0001;
+    const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 240; f.Q.value = 3;
+    const o1 = c.createOscillator(); o1.type = 'sawtooth'; o1.frequency.value = 48;
+    const o2 = c.createOscillator(); o2.type = 'sine'; o2.frequency.value = 96;
+    const rainGain = c.createGain(); rainGain.gain.value = 0.02;
+    const rainSrc = c.createBufferSource(); rainSrc.buffer = this.noise; rainSrc.loop = true;
+    const rainF = c.createBiquadFilter(); rainF.type = 'bandpass'; rainF.frequency.value = 2400; rainF.Q.value = 0.6;
+    o1.connect(f); o2.connect(f); f.connect(g); g.connect(this.master);
+    rainSrc.connect(rainF); rainF.connect(rainGain); rainGain.connect(this.master);
+    o1.start(); o2.start(); rainSrc.start();
+    g.gain.setTargetAtTime(0.05, c.currentTime, 1.2);
+    this.ambient = { g, f, o1, o2, rainSrc, rainGain, rainF };
+  }
+  ambientOff() {
+    const a = this.ambient; this.ambient = null;
+    if (!a || !this.ctx) return;
+    a.g.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.5);
+    a.rainGain.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.5);
+    setTimeout(() => { try { a.o1.stop(); a.o2.stop(); a.rainSrc.stop(); } catch (_) {} }, 1600);
+  }
+  close() { try { if (this.ctx) this.ctx.close(); } catch (_) {} this.ctx = null; this.ambient = null; }
+}
+const SND = new Sound();
+
+/* ───────────────────────────── D. МИР ────────────────────────────────────── */
+const B = CONFIG.building;
+const FH = () => CONFIG.building.floorH;
+const SLAB = () => CONFIG.building.slabH;
+const BW = () => CONFIG.building.width;
+const SW = () => CONFIG.building.stairW;
+
+const floorTop = (k) => (CONFIG.building.floors - k) * FH();
+const walkY = (k) => floorTop(k) + FH() - SLAB();
+const totalFloors = () => CONFIG.building.floors + 1;   // + подвал (k=0)
+const buildingH = () => totalFloors() * FH();
+
+/* Мебель: размеры, твёрдость. Рисуется в рендере по id. */
+const PROPS = {
+  sofa:     { w: 56, h: 20, solid: true },
+  wardrobe: { w: 36, h: 56, solid: true },
+  shelf:    { w: 46, h: 44, solid: true },
+  table:    { w: 36, h: 18, solid: true },
+  chair:    { w: 12, h: 20, solid: true },
+  bed:      { w: 62, h: 16, solid: true },
+  fridge:   { w: 26, h: 50, solid: true },
+  washer:   { w: 24, h: 30, solid: true },
+  bath:     { w: 58, h: 22, solid: true },
+  plant:    { w: 14, h: 24, solid: false },
+  boxes:    { w: 22, h: 18, solid: true },
+  piano:    { w: 46, h: 32, solid: true },
+  bike:     { w: 36, h: 22, solid: false },
+  tv:       { w: 26, h: 36, solid: true },
+  stand:    { w: 30, h: 14, solid: true },
+  crate:    { w: 24, h: 22, solid: true },
+  bucket:   { w: 12, h: 12, solid: false },
+  boiler:   { w: 40, h: 54, solid: true },
+  skis:     { w: 46, h: 10, solid: false },
+  mirror:   { w: 20, h: 30, solid: false },
+  icons:    { w: 18, h: 14, solid: false },
+};
+
+const ROOM_KINDS = {
+  living:  { name: 'комната',  props: ['sofa', 'carpet', 'tv', 'shelf', 'plant', 'table', 'chair'] },
+  kitchen: { name: 'кухня',    props: ['table', 'chair', 'fridge', 'shelf', 'plant', 'washer'] },
+  bedroom: { name: 'спальня',  props: ['bed', 'wardrobe', 'shelf', 'plant', 'mirror'] },
+  kids:    { name: 'детская',  props: ['bed', 'shelf', 'boxes', 'chair', 'plants', 'tv'] },
+  bath:    { name: 'ванная',   props: ['bath', 'washer', 'mirror', 'bucket'] },
+  storage: { name: 'кладовка', props: ['boxes', 'crate', 'skis', 'bike', 'shelf'] },
+  study:   { name: 'кабинет',  props: ['table', 'chair', 'shelf', 'piano', 'plant', 'icons'] },
+};
+
+const ARTIFACTS = [
+  { id: 'talon',   name: 'талончик на талоны' },
+  { id: 'disk',    name: 'дискета 3.5″' },
+  { id: 'vympel',  name: 'вымпел «Лучшему»' },
+  { id: 'cassette',name: 'кассета с записью' },
+  { id: 'znachok', name: 'значок «СССР»' },
+  { id: 'fantik',  name: 'фантик «Ну-ка отними»' },
+];
+
+const NPC_LINES = {
+  zina: {
+    name: 'баба Зина',
+    lines: [
+      'Свет-то вырубило, а лифт — стоит. Пробки ищи, внучок, в щитке на подвале.',
+      'Бабай под лестницей. Ты его фонарём, фонарём! Он света боится.',
+      'Не скачи по лестницам, шею сломаешь. И Семёновну не задевай — она с пирогом и скалкой.',
+    ],
+  },
+  tolya: {
+    name: 'дядя Толя',
+    lines: [
+      'Электричества нет, а телевизор показывает — я проверял. Дважды.',
+      'Пробка — она как жизнь: выскочила и ищи её по всем этажам.',
+      'Слышишь? Это Бабай. Он в темноте живёт, но фонарь его держит.',
+    ],
+  },
+  boy: {
+    name: 'мальчик с плеером',
+    lines: [
+      'У меня батарейки сели. Зато я видел, где пробка — кажется, на твоём этаже.',
+      'В «Денди» не поиграть без света. Найди пробки, а?',
+      'На девятом тётя Люда пробку в аквариум прятала. Ну, вдруг.',
+    ],
+  },
+};
+
+const world = {
+  seed: CONFIG.seed,
+  floors: [],
+  solids: [],       // статические твёрдые прямоугольники
+  gates: [],        // динамические створки лифта: {x,y,w,h,floor}
+  ladders: [],
+  items: [],
+  enemies: [],
+  npcs: [],
+  lights: [],       // статические источники: {x,y,r,color,on,flicker}
+  windows: [],
+  width: 0,
+  height: 0,
+  shaft: null,
+  elevator: null,
+  switchboard: null,
+  start: { x: 0, y: 0 },
+  fusesTotal: 3,
+  fusesInserted: 0,
+  powerStage: 0,    // 0 — темно, 1 — лифт, 2 — левый подъезд, 3 — весь свет
+};
+
+function addSolid(x, y, w, h) {
+  if (w > 0 && h > 0) world.solids.push({ x, y, w, h });
+}
+
+/* Кладём твёрдый прямоугольник, но не даём залезть в щель/на стену */
+function propRect(prop, x, walk) {
+  return { x, y: walk - prop.h, w: prop.w, h: prop.h };
+}
+
+function isFreeSpot(rect, pad = 2, ignoreFloorWalls = false) {
+  for (const s of world.solids) {
+    if (s.ghost) continue;
+    if (rect.x < s.x + s.w + pad && rect.x + rect.w + pad > s.x &&
+        rect.y < s.y + s.h + pad && rect.y + rect.h + pad > s.y) return false;
+  }
+  return true;
+}
+
+function buildWorld(seed) {
+  const R = makeRng(seed);
+  world.seed = seed;
+  world.floors.length = 0;
+  world.solids.length = 0;
+  world.gates.length = 0;
+  world.ladders.length = 0;
+  world.items.length = 0;
+  world.enemies.length = 0;
+  world.npcs.length = 0;
+  world.lights.length = 0;
+  world.windows.length = 0;
+  world.width = BW();
+  world.height = buildingH();
+  world.fusesInserted = 0;
+  world.powerStage = 0;
+
+  const layout = CONFIG.building.layout;
+  const interiorX0 = SW();
+  const interiorW = BW() - SW() * 2;
+  const sum = layout.reduce((a, s) => a + s.w, 0) || 1;
+  const scale = interiorW / sum;
+
+  /* План этажа (одинаковый для всех жилых этажей) */
+  const segs = [];
+  let cx = interiorX0;
+  for (const s of layout) {
+    const w = Math.round(s.w * scale);
+    segs.push({ t: s.t, x: cx, w, elevator: !!s.elevator });
+    cx += w;
+  }
+  segs[segs.length - 1].w += (interiorX0 + interiorW) - cx;   // догоняем остаток
+
+  const elevSeg = segs.find((s) => s.elevator) || segs[0];
+  const el = CONFIG.building.elevator;
+  const shaftX = Math.round(elevSeg.x + elevSeg.w - el.w);
+  world.shaft = { x: shaftX, w: el.w };
+  const carW = Math.max(36, Math.min(el.carW, el.w - 4));
+  world.elevator = {
+    x: shaftX + (el.w - carW) / 2,
+    w: carW, h: el.carH,
+    floor: CONFIG.building.startFloor,
+    y: walkY(CONFIG.building.startFloor) - el.carH,
+    targetY: walkY(CONFIG.building.startFloor) - el.carH,
+    state: 'idle',        // idle | moving
+    movingTo: null,
+    occupied: false,
+    powered: false,
+    doorsT: 0,
+  };
+
+  /* ── лестницы (зигзаг: чёт — справа, нечет — слева) ─────────────────
+     Создаём их ДО этажей: перекрытия должны знать, где прорезать дырки. */
+  world.ladders.length = 0;
+  for (let k = 0; k < CONFIG.building.floors; k++) {
+    const right = k % 2 === 0;
+    const x = right ? BW() - 96 : 96;
+    world.ladders.push({
+      x, k, to: k + 1,
+      x0: x - 17, x1: x + 17,
+      yTop: walkY(k + 1) - 4,
+      yBottom: walkY(k),
+      side: right ? 'right' : 'left',
+    });
+  }
+
+  /* ── генерация этажей ─────────────────────────────────────────────── */
+  for (let k = 0; k <= CONFIG.building.floors; k++) {
+    const isBasement = k === 0;
+    const top = floorTop(k);
+    const walk = walkY(k);
+    const floor = {
+      k, top, walk, isBasement,
+      segs: isBasement ? [{ t: 'corr', x: interiorX0, w: interiorW, basement: true }]
+                       : segs.map((s) => ({ ...s, name: s.t === 'room' ? '' : 'коридор' })),
+      rooms: [], corridors: [],
+      ladderUp: null, ladderDown: null,
+    };
+
+    /* перекрытие (пол этажа) с дырками под лестницы */
+    const holes = [];
+    const prevLadder = world.ladders.find((l) => l.to === k);
+    if (prevLadder) holes.push({ x: prevLadder.x - 16, w: 32 });
+    holes.push({ x: shaftX, w: el.w });          // колодец лифта — сквозной
+    let sx = 0;
+    for (const h of holes.sort((a, b) => a.x - b.x)) {
+      addSolid(sx, walk, h.x - sx, SLAB());
+      sx = h.x + h.w;
+    }
+    addSolid(sx, walk, BW() - sx, SLAB());
+
+    /* окна лестничных клеток светят в темноту (лунный свет) */
+    if (!isBasement) {
+      world.lights.push({ x: 134, y: walk - 39, r: 76, color: '#9cc8ff', on: true, floor: k, kind: 'moon' });
+      world.lights.push({ x: BW() - SW() + 46, y: walk - 39, r: 76, color: '#9cc8ff', on: true, floor: k, kind: 'moon' });
+    }
+
+    /* наружные стены этажа */
+    addSolid(0, top, 6, FH());
+    addSolid(BW() - 6, top, 6, FH());
+
+    /* комнаты и коридоры */
+    if (isBasement) {
+      const room = {
+        t: 'room', kind: 'basement', name: 'подвал', x: interiorX0, w: interiorW,
+        wall: R.pick(['#2c3038', '#302c34', '#293034']), seed: R.int(1, 9999),
+        props: [], window: null, lamp: { x: interiorX0 + 300, y: top + 14, on: false },
+        dark: true, candle: null,
+      };
+      floor.rooms.push(room);
+      floor.corridors.push(room);
+      /* хлам в подвале */
+      const props = ['boiler', 'crate', 'boxes', 'crate', 'bucket'];
+      let px = interiorX0 + 60;
+      for (const id of props) {
+        const p = PROPS[id];
+        const step = 70 + R.range(0, 50);
+        if (px + p.w < shaftX - 20) {
+          room.props.push({ id, x: px, y: walk - p.h, w: p.w, h: p.h });
+          if (p.solid) addSolid(px, walk - p.h, p.w, p.h);
+        }
+        px += step;
+      }
+      /* щиток справа от лифта */
+      const sbX = Math.min(BW() - SW() - 120, shaftX + el.w + 70);
+      world.switchboard = { x: sbX, y: walk - 52, w: 44, h: 52, used: false };
+      addSolid(sbX, walk - 52, 44, 52);
+      room.switchboard = world.switchboard;
+      floor.lampBasement = { x: sbX + 22, y: top + 16, on: false };
+    } else {
+      /* стены между сегментами: дверь в комнату или арка в коридор */
+      for (let i = 0; i < segs.length - 1; i++) {
+        const a = segs[i], b = segs[i + 1];
+        const wallX = b.x - 2;
+        const isRoom = a.t === 'room' || b.t === 'room';
+        if (isRoom) {
+          const doorW = CONFIG.building.doorW;
+          const doorH = CONFIG.building.doorH;
+          const doorX = wallX - doorW / 2;
+          addSolid(wallX, top, 4, (walk - doorH) - top);
+          floor.doorAt = floor.doorAt || [];
+          floor.doorAt.push({ x: doorX + doorW / 2, y: walk - doorH / 2, w: doorW, h: doorH });
+        } else {
+          addSolid(wallX, top, 4, FH() - 10);
+        }
+      }
+
+      /* коридоры и комнаты */
+      for (const s of segs) {
+        if (s.t === 'corr') {
+          const isElev = s.elevator;
+          const usableW = isElev ? s.w - el.w : s.w;
+          const corr = {
+            t: 'corr', x: s.x, w: usableW, fullX: s.x, fullW: s.w,
+            pal: R.pick(CONFIG.palette.corridor), seed: R.int(1, 9999),
+            lamp: { x: s.x + usableW / 2, y: top + 15, on: false },
+            window: R.chance(0.45) ? { x: s.x + usableW * 0.5, y: walk - 50, w: 30, h: 26 } : null,
+            props: [], elevator: isElev,
+          };
+          /* мелочь в коридоре */
+          if (R.chance(0.5)) {
+            const id = R.pick(['bike', 'boxes', 'plant', 'chair']);
+            const p = PROPS[id];
+            const px = s.x + 18 + R.range(0, Math.max(1, usableW - p.w - 36));
+            corr.props.push({ id, x: px, y: walk - p.h, w: p.w, h: p.h });
+            if (p.solid) addSolid(px, walk - p.h, p.w, p.h);
+          }
+          floor.corridors.push(corr);
+          if (corr.window) world.windows.push({ ...corr.window, floor: k });
+          world.lights.push({ x: corr.lamp.x, y: corr.lamp.y, r: CONFIG.light.lampRadius, color: '#ffcf6b', on: false, floor: k, kind: 'lamp' });
+          if (corr.window) world.lights.push({ x: corr.window.x + corr.window.w / 2, y: corr.window.y + corr.window.h / 2, r: 74, color: '#9cc8ff', on: true, floor: k, kind: 'moon' });
+        } else {
+          const kindId = R.pick(Object.keys(ROOM_KINDS));
+          const kind = ROOM_KINDS[kindId];
+          const room = {
+            t: 'room', kind: kindId, name: kind.name,
+            x: s.x + 4, w: s.w - 8,
+            wall: R.pick(CONFIG.palette.wallpaper), seed: R.int(1, 9999),
+            props: [], lamp: { x: s.x + s.w / 2, y: top + 15, on: false },
+            window: { x: s.x + s.w / 2 - 15, y: walk - 54, w: 30, h: 28 },
+            candle: R.chance(0.22) ? { x: s.x + 24, y: walk - 12 } : null,
+            dark: true,
+          };
+          /* мебель: 2–4 предмета, не загораживая проход у двери */
+          const count = R.int(2, 4);
+          const candidates = kind.props.filter((p) => PROPS[p]);
+          R.shuffle(candidates);
+          let cursor = room.x + 26;
+          for (let i = 0; i < count && i < candidates.length; i++) {
+            const id = candidates[i];
+            const p = PROPS[id];
+            const px = cursor + R.range(0, 18);
+            if (px + p.w > room.x + room.w - 22) break;
+            const rect = propRect(p, px, walk);
+            if (!isFreeSpot(rect, 3)) { cursor += 24; continue; }
+            room.props.push({ id, x: px, y: walk - p.h, w: p.w, h: p.h });
+            if (p.solid) addSolid(px, walk - p.h, p.w, p.h);
+            cursor = px + p.w + R.range(16, 40);
+          }
+          floor.rooms.push(room);
+          world.windows.push({ ...room.window, floor: k });
+          world.lights.push({ x: room.lamp.x, y: room.lamp.y, r: CONFIG.light.lampRadius, color: '#ffdca0', on: false, floor: k, kind: 'lamp' });
+          if (room.candle) {
+            world.lights.push({ x: room.candle.x, y: room.candle.y, r: CONFIG.light.candleR, color: '#ff9a52', on: true, floor: k, kind: 'candle' });
+          }
+        }
+      }
+    }
+
+    /* створки лифта: открыты только там, где стоит кабина */
+    const gateH = CONFIG.building.elevator.gateH;
+    addSolid(shaftX - 5, top, 5, (walk - gateH) - top);          // стена над проёмом
+    world.gates.push({ x: shaftX - 5, y: walk - gateH, w: 5, h: gateH, floor: k, top, walk });
+
+    world.floors.push(floor);
+  }
+
+  /* ── предметы, враги, NPC ─────────────────────────────────────────── */
+  placeLoot(R);
+  placeEnemies(R);
+  placeNpcs(R);
+
+  /* стартовая точка: девятый этаж, правая лестница */
+  const startK = CONFIG.building.startFloor;
+  const ladderTop = world.ladders.find((l) => l.to === startK);
+  const startX = ladderTop ? ladderTop.x + 44 : BW() / 2;
+  world.start = { x: startX, y: walkY(startK) - CONFIG.player.h };
+
+  rebuildGates();
+  return world;
+}
+
+/* Разложить предметы: семечки, батарейки, чай, артефакты, ПРОБКИ. */
+function placeLoot(R) {
+  const density = CONFIG.world.itemDensity;
+  const floors = world.floors;
+  const push = (item) => world.items.push(item);
+
+  /* пробки: три этажа-«полосы», по одной на полосу, всегда в комнате */
+  const bands = [
+    [CONFIG.building.floors, Math.max(1, CONFIG.building.floors - 1)],
+    [Math.round(CONFIG.building.floors * 0.62), Math.round(CONFIG.building.floors * 0.48)],
+    [Math.round(CONFIG.building.floors * 0.34), Math.round(CONFIG.building.floors * 0.24)],
+  ];
+  const usedRooms = new Set();
+  world.fuseHints = [];
+  for (let i = 0; i < bands.length; i++) {
+    const band = bands[i].filter((f) => f >= 1 && f <= CONFIG.building.floors);
+    let placed = false;
+    for (let attempt = 0; attempt < 24 && !placed; attempt++) {
+      const f = R.pick(band);
+      const fl = floors[f];
+      if (!fl || !fl.rooms.length) continue;
+      const room = R.pick(fl.rooms);
+      const key = f + ':' + room.x;
+      if (usedRooms.has(key)) continue;
+      const x = room.x + R.range(24, Math.max(26, room.w - 30));
+      const rect = AABB(x, fl.walk - 16, 12, 14);
+      if (!isFreeSpot(rect, 2)) continue;
+      push({ type: 'fuse', x, y: fl.walk - 12, floor: f, w: 10, h: 14, taken: false, bob: R.range(0, TAU) });
+      usedRooms.add(key);
+      world.fuseHints.push({ floor: f, roomName: room.name });
+      placed = true;
+    }
+  }
+  world.fusesTotal = world.fuseHints.length || 3;
+
+  /* артефакты — по одному на разных этажах */
+  let ai = 0;
+  for (let k = 1; k <= CONFIG.building.floors && ai < ARTIFACTS.length; k += 2) {
+    const fl = floors[k];
+    if (!fl || !fl.rooms.length) continue;
+    const room = R.pick(fl.rooms);
+    const x = room.x + room.w - R.range(18, 40);
+    if (!isFreeSpot(AABB(x, fl.walk - 14, 10, 12), 2)) continue;
+    push({ type: 'artifact', art: ARTIFACTS[ai], x, y: fl.walk - 12, floor: k, w: 10, h: 12, taken: false, bob: R.range(0, TAU) });
+    ai++;
+  }
+
+  /* семечки/батарейки/чай разбросаны */
+  for (let k = 0; k <= CONFIG.building.floors; k++) {
+    const fl = floors[k];
+    if (!fl) continue;
+    const segsAll = [...fl.rooms, ...fl.corridors];
+    const perFloor = Math.max(1, Math.round((k === 0 ? 4 : 3) * density));
+    for (let i = 0; i < perFloor; i++) {
+      const seg = R.pick(segsAll);
+      if (!seg) continue;
+      const x = seg.x + R.range(14, Math.max(16, seg.w - 14));
+      const y = fl.walk - 10;
+      if (!isFreeSpot(AABB(x - 4, y - 4, 10, 10), 1)) continue;
+      const roll = R.next();
+      if (roll < 0.6) push({ type: 'seed', x, y, floor: k, w: 8, h: 8, taken: false, bob: R.range(0, TAU) });
+      else if (roll < 0.85) push({ type: 'battery', x, y, floor: k, w: 8, h: 10, taken: false, bob: R.range(0, TAU) });
+      else push({ type: 'tea', x, y, floor: k, w: 9, h: 9, taken: false, bob: R.range(0, TAU) });
+    }
+  }
+  world.itemsTotal = world.items.length;
+}
+
+/* Враги: бабки и собаки в коридорах, Бабай — в тёмных комнатах и подвале. */
+function placeEnemies(R) {
+  const dens = CONFIG.world.enemyDensity;
+  for (let k = 1; k <= CONFIG.building.floors; k++) {
+    const fl = world.floors[k];
+    if (!fl) continue;
+    const spots = fl.corridors.filter((c) => c.w > 110);
+    /* бабка через этаж */
+    if (k % 2 === 1 && R.chance(0.92 * dens) && spots.length) {
+      const c = R.pick(spots);
+      world.enemies.push({
+        kind: 'granny', floor: k, x: c.x + c.w * 0.5, y: fl.walk - CONFIG.enemies.granny.h,
+        x0: c.x + 14, x1: c.x + c.w - 14, dir: R.chance(0.5) ? 1 : -1,
+        state: 'patrol', alert: 0, phase: R.range(0, TAU), w: CONFIG.enemies.granny.w, h: CONFIG.enemies.granny.h,
+      });
+    }
+    /* собака */
+    if (R.chance(0.42 * dens) && spots.length) {
+      const c = R.pick(spots);
+      world.enemies.push({
+        kind: 'dog', floor: k, x: c.x + c.w * 0.35, y: fl.walk - CONFIG.enemies.dog.h,
+        x0: c.x + 12, x1: c.x + c.w - 12, dir: R.chance(0.5) ? 1 : -1,
+        state: 'patrol', alert: 0, phase: R.range(0, TAU), w: CONFIG.enemies.dog.w, h: CONFIG.enemies.dog.h,
+      });
+    }
+    /* Бабай в комнате через одну */
+    if (k % 3 === 1 && R.chance(0.85 * dens) && fl.rooms.length) {
+      const room = R.pick(fl.rooms);
+      world.enemies.push({
+        kind: 'babay', floor: k, x: room.x + room.w * 0.65, y: fl.walk - CONFIG.enemies.babay.h,
+        homeX: room.x + room.w * 0.65, x0: room.x + 10, x1: room.x + room.w - 10,
+        state: 'lurk', alert: 0, phase: R.range(0, TAU), w: CONFIG.enemies.babay.w, h: CONFIG.enemies.babay.h,
+        frozen: 0,
+      });
+    }
+  }
+  /* в подвале — один гарантированный Бабай */
+  const base = world.floors[0];
+  if (base) {
+    world.enemies.push({
+      kind: 'babay', floor: 0, x: SW() + 140, y: base.walk - CONFIG.enemies.babay.h,
+      homeX: SW() + 140, x0: SW() + 20, x1: world.shaft.x - 20,
+      state: 'lurk', alert: 0, phase: R.range(0, TAU), w: CONFIG.enemies.babay.w, h: CONFIG.enemies.babay.h,
+      frozen: 0,
+    });
+  }
+}
+
+function placeNpcs(R) {
+  const add = (kind, floor, x, dir) => {
+    const fl = world.floors[floor];
+    if (!fl) return;
+    const lines = NPC_LINES[kind];
+    world.npcs.push({
+      kind, floor, x, y: fl.walk - 26, dir: dir || 1, name: lines.name,
+      lines: lines.lines, said: 0, t: 0,
+    });
+  };
+  const f1 = world.floors[1];
+  if (f1) add('zina', 1, BW() - SW() - 60, -1);
+  const f5 = world.floors[Math.min(5, CONFIG.building.floors)];
+  if (f5) add('tolya', f5.k, f5.corridors[0] ? f5.corridors[0].x + 40 : BW() / 2, 1);
+  const f7 = world.floors[Math.min(7, CONFIG.building.floors)];
+  if (f7) add('boy', f7.k, f7.corridors[f7.corridors.length - 1].x + 30, -1);
+}
+
+/* Створки лифта: солидны везде, кроме этажа, где стоит кабина. */
+function rebuildGates() {
+  world.gatesSolid = world.gates.filter((g) => !(world.elevator.powered && world.elevator.state === 'idle' && g.floor === world.elevator.floor))
+    .map((g) => ({ x: g.x, y: g.y, w: g.w, h: g.h }));
+}
+
+/* Найти этаж по вертикали (для камеры/подсказок). */
+function floorAtY(y) {
+  for (const fl of world.floors) if (y >= fl.top && y < fl.top + FH()) return fl;
+  return world.floors[world.floors.length - 1];
+}
+
+/* Как называется место под ногами игрока — для HUD. */
+function placeNameAt(px, py) {
+  const fl = floorAtY(py);
+  if (!fl) return 'дом';
+  if (fl.isBasement) return 'подвал';
+  if (px < SW() || px > BW() - SW()) return 'лестница';
+  for (const r of fl.rooms) if (px >= r.x - 4 && px <= r.x + r.w + 4) return r.name;
+  for (const c of fl.corridors) if (px >= c.fullX && px <= c.fullX + c.fullW) return 'коридор';
+  return 'этаж ' + fl.k;
+}
+
+/* ───────────────────────────── E. ИГРОК / СОСТОЯНИЕ ──────────────────────── */
+const game = {
+  mode: 'menu',          // menu | play | pause | ending | end
+  time: 0,
+  keys: Object.create(null),
+  player: null,
+  cam: { x: 0, y: 0, zoom: 1, tx: 0, ty: 0, tzoom: 1, shake: 0 },
+  torch: { on: false, battery: 100 },
+  seeds: 0,
+  artifactList: [],
+  nerves: CONFIG.player.nerves,
+  fuses: 0,
+  deaths: 0,
+  hitsTaken: 0,
+  itemsTaken: 0,
+  prompt: null,
+  particles: [],
+  floats: [],
+  bubbles: [],
+  endingT: 0,
+  fade: 0,
+  hints: [],
+  lastFloor: 0,
+  playTime: 0,
+  rideTarget: null,
+  flash: 0,
+};
+
+function makePlayer() {
+  const p = {
+    x: world.start.x, y: world.start.y,
+    w: CONFIG.player.w, h: CONFIG.player.h,
+    vx: 0, vy: 0, dir: 1,
+    onGround: false, coyote: 0, jumpBuf: 0, climbing: false,
+    ladder: null, invuln: 0, hurtFlash: 0, anim: 0, stepT: 0,
+    riding: false, dead: false, spawnX: world.start.x, spawnY: world.start.y,
+  };
+  return p;
+}
+
+function resetRun() {
+  game.time = 0;
+  game.playTime = 0;
+  game.seeds = 0;
+  game.artifactList = [];
+  game.nerves = CONFIG.player.nerves;
+  game.fuses = 0;
+  game.deaths = 0;
+  game.hitsTaken = 0;
+  game.itemsTaken = 0;
+  game.particles.length = 0;
+  game.floats.length = 0;
+  game.bubbles.length = 0;
+  game.torch = { on: false, battery: 100 };
+  game.endingT = 0;
+  game.player = makePlayer();
+  const startFloor = CONFIG.building.startFloor;
+  game.lastFloor = startFloor;
+  game.cam.x = world.start.x - view.w / 2;
+  game.cam.y = walkY(startFloor) - view.h * 0.55;
+  game.cam.zoom = 1;
+  for (const it of world.items) it.taken = false;
+  for (const l of world.lights) l.on = l.kind === 'candle';
+  world.fusesInserted = 0;
+  world.powerStage = 0;
+  const elv = world.elevator;
+  elv.powered = false;
+  elv.state = 'idle';
+  elv.movingTo = null;
+  elv.floor = CONFIG.building.startFloor;
+  elv.y = walkY(elv.floor) - elv.h;
+  elv.targetY = elv.y;
+  if (world.switchboard) world.switchboard.used = false;
+  rebuildGates();
+  updateHud(true);
+}
+
+/* Твёрдые прямоугольники: статика + створки лифта + кабина */
+function collectSolids(out) {
+  out.length = 0;
+  for (const s of world.solids) out.push(s);
+  if (world.gatesSolid) for (const g of world.gatesSolid) out.push(g);
+  const el = world.elevator;
+  if (el && !game.player.riding) {
+    out.push({ x: el.x + 2, y: el.y + el.h - 5, w: el.w - 4, h: 5 });
+  }
+  return out;
+}
+const SOLIDS = [];
+
+function collideX(p, dx) {
+  p.x += dx;
+  for (const s of SOLIDS) {
+    if (!overlap(p, s)) continue;
+    if (dx > 0) p.x = s.x - p.w;
+    else if (dx < 0) p.x = s.x + s.w;
+    p.vx = 0;
+  }
+}
+function collideY(p, dy) {
+  p.y += dy;
+  p.onGround = false;
+  for (const s of SOLIDS) {
+    if (!overlap(p, s)) continue;
+    if (dy > 0) { p.y = s.y - p.h; p.onGround = true; p.vy = 0; }
+    else if (dy < 0) { p.y = s.y + s.h; p.vy = Math.max(0, p.vy); }
+  }
+}
+
+function ladderAt(x, y) {
+  for (const l of world.ladders) {
+    if (x + 2 > l.x0 && x + CONFIG.player.w - 2 < l.x1 && y + CONFIG.player.h > l.yTop && y < l.yBottom + 4) return l;
+  }
+  return null;
+}
+
+/* ───────────────────────────── ВВОД ──────────────────────────────────────── */
+function isDown(...codes) { return codes.some((c) => game.keys[c]); }
+
+function inputAxis() {
+  let ax = 0;
+  if (isDown('ArrowLeft', 'KeyA')) ax -= 1;
+  if (isDown('ArrowRight', 'KeyD')) ax += 1;
+  return ax;
+}
+
+/* ───────────────────────────── ФИЗИКА ИГРОКА ─────────────────────────────── */
+function updatePlayer(dt) {
+  const p = game.player;
+  const C = CONFIG.player;
+  if (!p || game.mode !== 'play') return;
+
+  p.invuln = Math.max(0, p.invuln - dt);
+  p.hurtFlash = Math.max(0, p.hurtFlash - dt * 3);
+  if (p.dead) { p.vx = 0; p.vy = 0; return; }
+
+  if (p.riding) { updateRiding(dt); return; }
+
+  collectSolids(SOLIDS);
+  const ax = inputAxis();
+  const wantUp = isDown('ArrowUp', 'KeyW');
+  const wantDown = isDown('ArrowDown', 'KeyS');
+
+  /* лестница */
+  const lad = ladderAt(p.x + p.w / 2, p.y + 4);
+  if (lad && !p.climbing && !p.onGround && p.vy > 90) p.climbing = true;   // падаешь в проём — хватайся
+  if (lad && (wantUp || wantDown || p.climbing)) {
+    if (!p.climbing && (Math.abs(p.x + p.w / 2 - lad.x) < 32)) p.climbing = true;
+  }
+  if (p.climbing && !lad) p.climbing = false;
+
+  if (p.climbing) {
+    p.ladder = lad;
+    p.vy = 0;
+    p.vx = 0;
+    p.x = lerp(p.x, lad.x - p.w / 2, Math.min(1, dt * 12));
+    if (wantUp) p.vy = -C.climb;
+    if (wantDown) p.vy = C.climb;
+    if (isDown('ArrowLeft', 'KeyA') || isDown('ArrowRight', 'KeyD')) {
+      p.climbing = false;                 // шагнуть с лестницы
+    }
+    if (p.jumpBuf > 0) { p.climbing = false; p.vy = -C.jump * 0.72; p.jumpBuf = 0; SND.jump(); }
+    collideY(p, p.vy * dt);
+    if (p.onGround && wantDown) p.climbing = false;
+    p.anim += Math.abs(p.vy) * dt * 0.06;
+    if (Math.abs(p.vy) > 1) { p.stepT += dt; if (p.stepT > 0.34) { p.stepT = 0; SND.step('stairs'); } }
+    return;
+  }
+
+  /* горизонталь */
+  const accel = p.onGround ? C.accel : C.airAccel;
+  if (ax !== 0) {
+    p.vx += ax * accel * dt;
+    p.vx = clamp(p.vx, -C.run, C.run);
+    p.dir = ax;
+  } else {
+    const fr = (p.onGround ? C.friction : C.airAccel * 0.35) * dt;
+    if (Math.abs(p.vx) <= fr) p.vx = 0; else p.vx -= sign(p.vx) * fr;
+  }
+
+  /* гравитация */
+  p.vy = Math.min(C.maxFall, p.vy + C.gravity * dt);
+  p.coyote = p.onGround ? C.coyote : Math.max(0, p.coyote - dt);
+  p.jumpBuf = Math.max(0, p.jumpBuf - dt);
+  if (p.jumpBuf > 0 && (p.onGround || p.coyote > 0)) {
+    p.vy = -C.jump; p.onGround = false; p.coyote = 0; p.jumpBuf = 0; SND.jump();
+  }
+  /* короткий прыжок */
+  if (!isDown('Space', 'ArrowUp', 'KeyW') && p.vy < -140) p.vy += C.gravity * 1.9 * dt;
+
+  collideX(p, p.vx * dt);
+  collideY(p, p.vy * dt);
+
+  if (p.onGround) {
+    p.anim += Math.abs(p.vx) * dt * 0.055;
+    if (Math.abs(p.vx) > 18) {
+      p.stepT += dt;
+      if (p.stepT > 0.26) { p.stepT = 0; SND.step(placeNameAt(p.x, p.y) === 'коридор' ? 'carpet' : 'floor'); }
+    }
+  }
+  /* не вывалиться за дом */
+  p.x = clamp(p.x, 8, world.width - p.w - 8);
+  if (p.y > world.height + 200) respawn('Ты улетел в подвал мироздания');
+}
+
+/* Лифт: поездка */
+function updateRiding() {
+  const p = game.player, el = world.elevator;
+  p.x = el.x + (el.w - p.w) / 2;
+  p.y = el.y + el.h - p.h;
+  p.vx = 0; p.vy = 0; p.onGround = true;
+  if (game.rideTarget === null || game.rideTarget === undefined) game.rideTarget = el.floor;
+}
+
+function updateElevator(dt) {
+  const el = world.elevator;
+  if (!el.powered) return;
+  if (el.state === 'moving') {
+    const ty = walkY(el.movingTo) - el.h;
+    const dy = ty - el.y;
+    const step = CONFIG.building.elevator.speed * dt;
+    if (Math.abs(dy) <= step) {
+      el.y = ty;
+      el.floor = el.movingTo;
+      el.state = 'idle';
+      el.movingTo = null;
+      SND.ding();
+      rebuildGates();
+      if (game.player.riding) {
+        game.rideTargetFloor = el.floor;
+        addFloat(el.x + el.w / 2, el.y + 6, 'дзынь', '#ffcf6b');
+      }
+    } else {
+      el.y += sign(dy) * step;
+    }
+    rebuildGates();
+  }
+}
+
+/* ───────────────────────────── УРОН / СМЕРТЬ ─────────────────────────────── */
+function damagePlayer(n, fromX, reason) {
+  const p = game.player;
+  if (!p || p.dead || p.invuln > 0 || game.mode !== 'play') return;
+  game.nerves -= n;
+  game.hitsTaken++;
+  p.invuln = CONFIG.player.invuln;
+  p.hurtFlash = 1;
+  p.vx = (p.x < fromX ? -1 : 1) * CONFIG.player.knockX;
+  p.vy = -CONFIG.player.knockY;
+  p.climbing = false;
+  game.cam.shake = 9;
+  SND.hurt();
+  addFloat(p.x + p.w / 2, p.y - 4, reason || 'ай!', '#ff4d7a');
+  burst(p.x + p.w / 2, p.y + p.h / 2, 12, '#ff4d7a');
+  updateHud();
+  if (game.nerves <= 0 && !p.dead) {
+    p.dead = true;
+    p.climbing = false;
+    p.riding = false;
+    game.deaths++;
+    game.fade = 1;
+    setTimeout(() => respawn('Санёк присел у батареи…'), 420);
+  }
+}
+
+function respawn(msg) {
+  const p = game.player;
+  const fl = floorAtY(p.y);
+  const k = fl ? fl.k : CONFIG.building.startFloor;
+  const ladder = world.ladders.find((l) => l.to === k) || world.ladders[0];
+  const x = ladder ? ladder.x - p.w / 2 : world.start.x;
+  p.x = x; p.y = walkY(k) - p.h; p.vx = 0; p.vy = 0;
+  p.climbing = false; p.riding = false; p.invuln = 1.6; p.dead = false;
+  game.nerves = CONFIG.player.nerves;
+  game.cam.x = p.x - view.w / (2 * game.cam.zoom);
+  game.cam.y = p.y - view.h / (2 * game.cam.zoom);
+  game.seeds = Math.max(0, game.seeds - 3);
+  toast(msg || 'Очнулся у лестницы', 'bad');
+  game.fade = 0.9;
+  updateHud();
+}
+
+/* ───────────────────────────── ПРЕДМЕТЫ ──────────────────────────────────── */
+function pickup(item) {
+  item.taken = true;
+  game.itemsTaken++;
+  const px = item.x, py = item.y;
+  if (item.type === 'seed') {
+    game.seeds++;
+    SND.pickup();
+    addFloat(px, py - 4, '+1 семечка', '#ffcf6b');
+    burst(px, py, 6, '#ffcf6b', 60);
+  } else if (item.type === 'battery') {
+    game.torch.battery = clamp(game.torch.battery + 32, 0, 100);
+    SND.pickup();
+    addFloat(px, py - 4, 'батарейка +32%', '#b8ff4d');
+    burst(px, py, 8, '#b8ff4d', 70);
+  } else if (item.type === 'tea') {
+    game.nerves = Math.min(CONFIG.player.nerves, game.nerves + 1);
+    SND.pickup();
+    addFloat(px, py - 4, 'чай: нервы +1', '#52e0c0');
+    burst(px, py, 8, '#52e0c0', 70);
+  } else if (item.type === 'fuse') {
+    game.fuses++;
+    SND.fuse();
+    addFloat(px, py - 8, 'ПРОБКА', '#ffcf6b', 16);
+    burst(px, py, 18, '#ffcf6b', 120);
+    toast(`Пробка ${game.fuses}/${world.fusesTotal}. Щиток — в подвале.`, 'good');
+    game.cam.shake = 4;
+  } else if (item.type === 'artifact') {
+    game.artifactList.push(item.art.id);
+    SND.pickup();
+    addFloat(px, py - 8, item.art.name, '#8a63ff', 13);
+    toast('Артефакт: ' + item.art.name, 'good');
+    burst(px, py, 14, '#8a63ff', 100);
+  }
+  updateHud();
+}
+
+function updateItems() {
+  const p = game.player;
+  const box = AABB(p.x - 5, p.y - 5, p.w + 10, p.h + 10);
+  for (const it of world.items) {
+    if (it.taken) continue;
+    if (it.floor !== undefined) {
+      const fl = world.floors[it.floor];
+      if (fl && Math.abs((p.y + p.h) - fl.walk) > 40 && it.floor !== floorAtY(p.y).k) continue;
+    }
+    if (overlap(box, AABB(it.x - 2, it.y - 2, it.w + 4, it.h + 4))) pickup(it);
+  }
+}
+
+/* ───────────────────────────── ЩИТОК / ПИТАНИЕ ───────────────────────────── */
+function insertFuse() {
+  const sb = world.switchboard;
+  if (!sb) return;
+  if (game.fuses <= 0) {
+    toast('Пробки нет. Ищи по этажам — они светятся.', 'bad');
+    return;
+  }
+  game.fuses--;
+  world.fusesInserted++;
+  world.powerStage = world.fusesInserted;
+  SND.fuse();
+  addFloat(sb.x + sb.w / 2, sb.y - 8, 'щёлк!', '#ffcf6b', 16);
+  burst(sb.x + sb.w / 2, sb.y + 10, 22, '#ffe9a8', 140);
+  game.cam.shake = 8;
+  applyPowerStage();
+  updateHud();
+}
+
+function applyPowerStage() {
+  const stage = world.powerStage;
+  const floors = CONFIG.building.floors;
+  if (stage >= 1) {
+    world.elevator.powered = true;
+    toast('Щёлк. Лифт ожил — и подвал загорелся.', 'good');
+    for (const l of world.lights) if (l.floor === 0) l.on = true;
+    world.switchboard.used = true;
+    rebuildGates();
+  }
+  if (stage >= 2) {
+    const half = Math.ceil(floors / 2);
+    for (const l of world.lights) if (l.floor >= 1 && l.floor <= half) l.on = true;
+    toast('Полдома вспыхнуло: подъезд дышит светом.', 'good');
+  }
+  if (stage >= 3) {
+    for (const l of world.lights) l.on = true;
+    SND.power();
+    startEnding();
+  }
+  for (const l of world.lights) {
+    if (l.kind === 'lamp') l.r = CONFIG.light.lampRadius;
+  }
+}
+
+/* ───────────────────────────── ВРАГИ ─────────────────────────────────────── */
+function inTorchCone(tx, ty) {
+  if (!game.torch.on || game.torch.battery <= 0) return false;
+  const p = game.player;
+  const ox = p.x + p.w / 2, oy = p.y + p.h * 0.45;
+  const dx = tx - ox, dy = ty - oy;
+  const dist = Math.hypot(dx, dy);
+  if (dist > CONFIG.player.torchRange) return false;
+  const ang = Math.atan2(dy, Math.abs(dx) || 0.0001);
+  if ((dx < 0 ? -1 : 1) !== p.dir && dist > 16) return false;
+  return Math.abs(ang) <= CONFIG.player.torchSpread * 0.9;
+}
+
+function updateEnemies(dt) {
+  const p = game.player;
+  const pf = floorAtY(p.y + p.h - 2).k;
+  for (const e of world.enemies) {
+    e.phase += dt;
+    const el = world.elevator;
+    const sameFloor = e.floor === pf;
+    const dx = (p.x + p.w / 2) - (e.x + e.w / 2);
+    const dist = Math.abs(dx);
+
+    if (e.kind === 'babay') {
+      const lit = inTorchCone(e.x + e.w / 2, e.y + e.h / 2);
+      e.frozen = lit ? 1 : Math.max(0, e.frozen - dt * 2);
+      const dark = world.powerStage < 3;
+      if (lit || !dark) {
+        e.state = 'frozen';
+      } else {
+        e.state = 'lurk';
+        if (sameFloor && dist < 260) {
+          const sp = CONFIG.enemies.babay.speed;
+          e.x += sign(dx) * sp * dt;
+          e.x = clamp(e.x, e.x0, e.x1);
+        } else {
+          e.x = lerp(e.x, e.homeX + Math.sin(e.phase * 0.4) * 26, dt * 0.6);
+        }
+      }
+      if (!lit && Math.abs((p.y + p.h) - (e.y + e.h)) < 34 && overlap(p, e) && p.invuln <= 0) {
+        damagePlayer(CONFIG.enemies.babay.dmg, e.x + e.w / 2, 'Бабай!');
+        e.x = e.homeX;
+        SND.babay();
+      }
+      continue;
+    }
+
+    /* бабка и собака: патруль + погоня */
+    const cfg = CONFIG.enemies[e.kind];
+    const sight = cfg.sight;
+    const floorMatch = sameFloor && Math.abs((p.y + p.h) - (e.y + e.h)) < 30;
+    const sees = floorMatch && dist < sight;
+    if (sees && e.state !== 'chase') {
+      e.state = 'chase';
+      e.alert = 1.2;
+      if (e.kind === 'granny') SND.granny(); else SND.dog();
+      if (e.kind === 'granny') say(e, 'Стоять, окаянный!');
+      else say(e, 'Гав!');
+    }
+    if (e.state === 'chase') {
+      e.alert -= dt;
+      if (!floorMatch || dist > sight * 1.8 || e.alert < -1.5) { e.state = 'patrol'; e.alert = 0; }
+      else {
+        const sp = cfg.speed * 1.55;
+        e.x += sign(dx) * sp * dt;
+        e.dir = sign(dx) || e.dir;
+      }
+    } else {
+      const sp = cfg.speed;
+      e.x += e.dir * sp * dt;
+      if (e.x < e.x0) { e.x = e.x0; e.dir = 1; }
+      if (e.x > e.x1 - e.w) { e.x = e.x1 - e.w; e.dir = -1; }
+    }
+    if (floorMatch && overlap(p, e) && p.invuln <= 0 && !p.dead) {
+      damagePlayer(cfg.dmg, e.x + e.w / 2, e.kind === 'granny' ? 'скалка!' : 'тяф!');
+    }
+  }
+  updateNpcs(dt);
+  updateBubbles(dt);
+}
+
+function updateNpcs(dt) {
+  const p = game.player;
+  for (const n of world.npcs) {
+    n.t += dt;
+    const fl = world.floors[n.floor];
+    if (!fl) continue;
+    const near = Math.abs((p.y + p.h) - fl.walk) < 34 && Math.abs((p.x + p.w / 2) - (n.x + 10)) < 54;
+    n.near = near;
+  }
+}
+
+/* ───────────────────────────── ПУЗЫРИ / ЧАСТИЦЫ ──────────────────────────── */
+function say(ent, text, dur = 3.2) {
+  game.bubbles.push({
+    x: ent.x + (ent.w || 20) / 2, y: ent.y - 6, text, t: 0, dur,
+    color: ent.kind === 'babay' ? '#c9b6ff' : ent.kind === 'granny' ? '#ffd6e0' : '#eaffc9',
+  });
+  if (game.bubbles.length > 5) game.bubbles.shift();
+}
+function updateBubbles(dt) {
+  for (let i = game.bubbles.length - 1; i >= 0; i--) {
+    game.bubbles[i].t += dt;
+    if (game.bubbles[i].t > game.bubbles[i].dur) game.bubbles.splice(i, 1);
+  }
+}
+function addFloat(x, y, text, color, size = 11) {
+  game.floats.push({ x, y, text, color, size, t: 0, dur: 1.35 });
+  if (game.floats.length > 24) game.floats.shift();
+}
+function burst(x, y, n, color, speed = 90) {
+  const cap = CONFIG.fx.particles;
+  for (let i = 0; i < n; i++) {
+    if (game.particles.length >= cap) game.particles.shift();
+    const a = Math.random() * TAU, sp = speed * (0.25 + Math.random() * 0.75);
+    const life = 0.4 + Math.random() * 0.7;
+    game.particles.push({
+      x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 30,
+      life, max: life, r: 0.8 + Math.random() * 1.8, color, g: 280,
+    });
+  }
+}
+
+/* ───────────────────────────── G. РЕНДЕР: БАЗА ───────────────────────────── */
+const canvas = $('#game');
+const ctx = canvas.getContext('2d', { alpha: false });
+const view = { w: 1280, h: 720, dpr: 1, zoom: 1 };
+const BAKE = 2.5;                     // запекаем этажи для чёткости под зум
+
+function resize() {
+  view.w = Math.max(320, window.innerWidth);
+  view.h = Math.max(320, window.innerHeight);
+  view.dpr = clamp(window.devicePixelRatio || 1, 1, 2);
+  canvas.width = Math.round(view.w * view.dpr);
+  canvas.height = Math.round(view.h * view.dpr);
+  canvas.style.width = view.w + 'px';
+  canvas.style.height = view.h + 'px';
+  game.cam.zoom = clamp(game.cam.zoom, CONFIG.camera.zoomMin, CONFIG.camera.zoomMax);
+}
+window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', () => setTimeout(() => { resize(); layoutTouch(); }, 120));
+
+function screenToWorld(sx, sy) {
+  return { x: sx / game.cam.zoom + game.cam.x, y: sy / game.cam.zoom + game.cam.y };
+}
+
+/* Мини-хелперы рисования */
+function rr(c, x, y, w, h, r) {
+  const k = Math.min(r, w / 2, h / 2);
+  c.beginPath();
+  c.moveTo(x + k, y);
+  c.arcTo(x + w, y, x + w, y + h, k);
+  c.arcTo(x + w, y + h, x, y + h, k);
+  c.arcTo(x, y + h, x, y, k);
+  c.arcTo(x, y, x + w, y, k);
+  c.closePath();
+}
+function vgrad(c, x, y, w, h, top, bottom) {
+  const g = c.createLinearGradient(x, y, x, y + h);
+  g.addColorStop(0, top); g.addColorStop(1, bottom);
+  return g;
+}
+function glowDot(c, x, y, r, color, a = 1) {
+  const g = c.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, withAlpha(color, 0.55 * a));
+  g.addColorStop(0.5, withAlpha(color, 0.16 * a));
+  g.addColorStop(1, withAlpha(color, 0));
+  c.fillStyle = g;
+  c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill();
+}
+
+/* ── Обои и стены ─────────────────────────────────────────────────────── */
+function drawWallpaper(c, x, y, w, h, base, seed, style) {
+  c.fillStyle = base;
+  c.fillRect(x, y, w, h);
+  const R = makeRng(seed);
+  c.save();
+  c.beginPath(); c.rect(x, y, w, h); c.clip();
+  if (style === 'stripes') {
+    c.fillStyle = withAlpha('#ffffff', 0.045);
+    for (let i = x; i < x + w; i += 9) c.fillRect(i, y, 4, h);
+  } else if (style === 'diamonds') {
+    c.fillStyle = withAlpha('#ffffff', 0.05);
+    for (let iy = y + 6; iy < y + h; iy += 14) {
+      for (let ix = x + 6; ix < x + w; ix += 14) {
+        c.save(); c.translate(ix, iy); c.rotate(Math.PI / 4); c.fillRect(-2, -2, 4, 4); c.restore();
+      }
+    }
+  } else if (style === 'flowers') {
+    for (let iy = y + 10; iy < y + h - 4; iy += 20) {
+      for (let ix = x + 10; ix < x + w - 4; ix += 22) {
+        const col = R.pick(['#c98a5a', '#8fb37a', '#c47b95', '#a98f5c']);
+        c.fillStyle = withAlpha(col, 0.35);
+        for (let p = 0; p < 4; p++) {
+          const a = (p / 4) * TAU;
+          c.beginPath(); c.arc(ix + Math.cos(a) * 2.6, iy + Math.sin(a) * 2.6, 1.8, 0, TAU); c.fill();
+        }
+        c.fillStyle = withAlpha('#f0e0a0', 0.35);
+        c.beginPath(); c.arc(ix, iy, 1.3, 0, TAU); c.fill();
+      }
+    }
+  } else if (style === 'tiles') {
+    c.strokeStyle = withAlpha('#ffffff', 0.075);
+    c.lineWidth = 0.6;
+    for (let iy = y; iy < y + h; iy += 9) { c.beginPath(); c.moveTo(x, iy); c.lineTo(x + w, iy); c.stroke(); }
+    for (let ix = x; ix < x + w; ix += 9) { c.beginPath(); c.moveTo(ix, y); c.lineTo(ix, y + h); c.stroke(); }
+  } else {
+    /* краска с потёками */
+    for (let i = 0; i < 26; i++) {
+      const px = x + R.range(0, w), py = y + R.range(0, h);
+      c.fillStyle = withAlpha('#000000', R.range(0.02, 0.07));
+      c.fillRect(px, py, R.range(1, 4), R.range(4, 22));
+    }
+  }
+  /* общий градиент-грязь сверху и снизу */
+  const g = c.createLinearGradient(0, y, 0, y + h);
+  g.addColorStop(0, 'rgba(0,0,0,.34)');
+  g.addColorStop(0.22, 'rgba(0,0,0,.04)');
+  g.addColorStop(0.8, 'rgba(0,0,0,.06)');
+  g.addColorStop(1, 'rgba(0,0,0,.4)');
+  c.fillStyle = g;
+  c.fillRect(x, y, w, h);
+  c.restore();
+}
+
+function drawFloorBoards(c, x, y, w, h, color) {
+  c.fillStyle = color;
+  c.fillRect(x, y, w, h);
+  const R = makeRng(x * 13 + 7);
+  for (let i = 0; i < w; i += 14) {
+    c.fillStyle = withAlpha('#000000', R.range(0.04, 0.14));
+    c.fillRect(x + i, y, 1, h);
+    c.fillStyle = withAlpha('#ffffff', R.range(0.01, 0.05));
+    c.fillRect(x + i + 1, y, 5, h);
+  }
+  /* паркетная ёлочка */
+  c.strokeStyle = withAlpha('#000000', 0.10);
+  c.lineWidth = 0.7;
+  for (let i = x; i < x + w; i += 11) {
+    c.beginPath(); c.moveTo(i, y); c.lineTo(i + 7, y + h); c.stroke();
+    c.beginPath(); c.moveTo(i + 7, y); c.lineTo(i, y + h); c.stroke();
+  }
+}
+
+/* ── Мебель ───────────────────────────────────────────────────────────── */
+const PROP_ART = {
+  sofa(c, x, y, w, h) {
+    c.fillStyle = '#6b3a3f'; rr(c, x, y + 4, w, h - 4, 3); c.fill();
+    c.fillStyle = '#8b4c52'; rr(c, x + 2, y + 6, w - 4, h - 8, 3); c.fill();
+    c.fillStyle = '#a25a61'; rr(c, x + 4, y + 2, w - 8, 8, 3); c.fill();
+    c.fillStyle = 'rgba(0,0,0,.22)';
+    c.fillRect(x + w / 2 - 0.5, y + 8, 1, h - 10);
+    c.fillStyle = '#2c1a1c'; c.fillRect(x + 3, y + h - 3, 3, 3); c.fillRect(x + w - 6, y + h - 3, 3, 3);
+  },
+  wardrobe(c, x, y, w, h) {
+    c.fillStyle = '#4a382c'; rr(c, x, y, w, h, 2); c.fill();
+    c.fillStyle = '#6a513f'; rr(c, x + 2, y + 2, w - 4, h - 4, 1); c.fill();
+    c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(x + w / 2 - 0.5, y + 3, 1, h - 6);
+    c.fillStyle = '#c9a86a'; c.fillRect(x + w / 2 - 4, y + h * 0.45, 2, 5); c.fillRect(x + w / 2 + 2, y + h * 0.45, 2, 5);
+  },
+  shelf(c, x, y, w, h) {
+    c.fillStyle = '#3d2f26'; c.fillRect(x, y, w, h);
+    c.fillStyle = '#564334'; c.fillRect(x + 1, y + 1, w - 2, h - 2);
+    const R = makeRng(x + y);
+    for (let i = 0; i < 3; i++) {
+      const sy = y + 8 + i * (h - 12) / 3;
+      c.fillStyle = 'rgba(0,0,0,.4)'; c.fillRect(x + 2, sy, w - 4, 2);
+      for (let bx = x + 3; bx < x + w - 4; bx += 4) {
+        if (R.chance(0.72)) {
+          c.fillStyle = R.pick(['#b34a4a', '#4a7bb3', '#c9a24a', '#6b9e68', '#8a63c9']);
+          c.fillRect(bx, sy - R.range(5, 9), 3, R.range(5, 9));
+        }
+      }
+    }
+  },
+  table(c, x, y, w, h) {
+    c.fillStyle = '#5a4231'; c.fillRect(x, y, w, 3);
+    c.fillStyle = '#3a2a1e'; c.fillRect(x + 2, y + 3, 2, h - 3); c.fillRect(x + w - 4, y + 3, 2, h - 3);
+    c.fillStyle = '#8a8f98'; c.fillRect(x + 6, y - 4, 6, 5);          // чайник
+    c.fillStyle = '#c9c2b0'; c.fillRect(x + w - 14, y - 3, 7, 4);     // чашка
+  },
+  chair(c, x, y, w, h) {
+    c.fillStyle = '#4d3a2b'; c.fillRect(x + 1, y, w - 2, 3); c.fillRect(x + 1, y + 3, 2, h - 3); c.fillRect(x + w - 3, y + 3, 2, h - 3);
+  },
+  bed(c, x, y, w, h) {
+    c.fillStyle = '#3a2b22'; rr(c, x, y + 3, w, h - 3, 2); c.fill();
+    c.fillStyle = '#8a8fa8'; rr(c, x + 1, y, w - 2, 7, 2); c.fill();
+    c.fillStyle = '#c4c9d8'; rr(c, x + 3, y + 1, 12, 5, 2); c.fill();   // подушка
+    c.fillStyle = '#8f4a5c'; rr(c, x + 16, y + 2, w - 20, h - 6, 2); c.fill(); // одеяло
+    c.strokeStyle = 'rgba(0,0,0,.2)'; c.lineWidth = 0.6;
+    for (let i = x + 20; i < x + w - 4; i += 6) { c.beginPath(); c.moveTo(i, y + 4); c.lineTo(i, y + h - 4); c.stroke(); }
+  },
+  fridge(c, x, y, w, h) {
+    c.fillStyle = '#b9c2bb'; rr(c, x, y, w, h, 3); c.fill();
+    c.fillStyle = '#d5dcd4'; rr(c, x + 2, y + 2, w - 4, h * 0.38, 2); c.fill();
+    c.fillStyle = '#9aa39a'; c.fillRect(x + 2, y + h * 0.4, w - 4, 1);
+    c.fillStyle = '#6f7a72'; c.fillRect(x + w - 6, y + 6, 2, 9); c.fillRect(x + w - 6, y + h * 0.45, 2, 9);
+    c.fillStyle = '#c94a4a'; c.fillRect(x + 4, y + h * 0.5, 3, 3);      // магнитик
+  },
+  washer(c, x, y, w, h) {
+    c.fillStyle = '#cfd6da'; rr(c, x, y, w, h, 2); c.fill();
+    c.fillStyle = '#8f9aa2'; c.beginPath(); c.arc(x + w / 2, y + h * 0.58, Math.min(w, h) * 0.3, 0, TAU); c.fill();
+    c.fillStyle = '#4a5560'; c.beginPath(); c.arc(x + w / 2, y + h * 0.58, Math.min(w, h) * 0.19, 0, TAU); c.fill();
+    c.fillStyle = '#6c7780'; c.fillRect(x + 3, y + 3, w - 6, 3);
+  },
+  bath(c, x, y, w, h) {
+    c.fillStyle = '#dfe6e8'; rr(c, x, y, w, h, 6); c.fill();
+    c.fillStyle = '#a9b6ba'; rr(c, x + 3, y + 3, w - 6, h - 7, 5); c.fill();
+    c.fillStyle = '#7fa4b8'; rr(c, x + 5, y + h * 0.45, w - 10, h * 0.4, 4); c.fill();
+    c.fillStyle = '#9aa6aa'; c.fillRect(x + w - 8, y - 6, 3, 7);
+  },
+  plant(c, x, y, w, h) {
+    c.fillStyle = '#8a5a3a'; c.fillRect(x + 2, y + h - 7, w - 4, 7);
+    c.strokeStyle = '#4f7a44'; c.lineWidth = 1.6; c.lineCap = 'round';
+    for (let i = 0; i < 5; i++) {
+      const a = -Math.PI / 2 + (i - 2) * 0.42;
+      c.beginPath(); c.moveTo(x + w / 2, y + h - 7);
+      c.quadraticCurveTo(x + w / 2 + Math.cos(a) * 8, y + h - 16, x + w / 2 + Math.cos(a) * 13, y + h - 7 + Math.sin(a) * 17);
+      c.stroke();
+    }
+  },
+  boxes(c, x, y, w, h) {
+    c.fillStyle = '#8a6b45'; c.fillRect(x, y, w, h);
+    c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 0.8;
+    c.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+    c.beginPath(); c.moveTo(x, y + h / 2); c.lineTo(x + w, y + h / 2); c.stroke();
+    c.fillStyle = 'rgba(255,255,255,.14)'; c.fillRect(x + 3, y + 3, 6, 2);
+  },
+  piano(c, x, y, w, h) {
+    c.fillStyle = '#241a16'; rr(c, x, y, w, h, 3); c.fill();
+    c.fillStyle = '#3a2b23'; rr(c, x + 3, y + 3, w - 6, h - 12, 2); c.fill();
+    c.fillStyle = '#e8e2d2';
+    for (let i = 0; i < 9; i++) c.fillRect(x + 5 + i * ((w - 10) / 9), y + h - 9, (w - 12) / 9 - 1, 4);
+    c.fillStyle = '#141010';
+    for (let i = 0; i < 5; i++) c.fillRect(x + 8 + i * ((w - 10) / 6), y + h - 9, 2, 3);
+  },
+  bike(c, x, y, w, h) {
+    c.strokeStyle = '#4a5a6a'; c.lineWidth = 1.5;
+    c.beginPath(); c.arc(x + 6, y + h - 6, 6, 0, TAU); c.stroke();
+    c.beginPath(); c.arc(x + w - 6, y + h - 6, 6, 0, TAU); c.stroke();
+    c.beginPath(); c.moveTo(x + 6, y + h - 6); c.lineTo(x + w / 2, y + 3); c.lineTo(x + w - 6, y + h - 6); c.stroke();
+    c.beginPath(); c.moveTo(x + w / 2, y + h - 6); c.lineTo(x + w / 2, y + 3); c.stroke();
+    c.fillStyle = '#2a2a2a'; c.fillRect(x + w / 2 - 4, y + 1, 8, 2);
+  },
+  tv(c, x, y, w, h) {
+    c.fillStyle = '#2a2a30'; rr(c, x, y, w, h, 3); c.fill();
+    c.fillStyle = '#101318'; rr(c, x + 2, y + 2, w - 4, h - 9, 2); c.fill();
+    const g = c.createLinearGradient(x, y, x + w, y + h);
+    g.addColorStop(0, 'rgba(90,120,160,.55)'); g.addColorStop(0.5, 'rgba(40,60,90,.5)'); g.addColorStop(1, 'rgba(120,140,170,.4)');
+    c.fillStyle = g; rr(c, x + 3, y + 3, w - 6, h - 11, 2); c.fill();
+    c.fillStyle = '#3a3a42'; c.fillRect(x + 4, y + h - 7, w - 8, 3);
+    c.fillStyle = '#c94a4a'; c.beginPath(); c.arc(x + w - 5, y + h - 5.5, 1.2, 0, TAU); c.fill();
+    c.fillStyle = '#8a8a92'; c.fillRect(x + 3, y + h - 5.5, 2, 1);
+  },
+  stand(c, x, y, w, h) {
+    c.fillStyle = '#4a3b30'; c.fillRect(x, y, w, 3);
+    c.fillStyle = '#33271f'; c.fillRect(x + 3, y + 3, 3, h - 3); c.fillRect(x + w - 6, y + 3, 3, h - 3);
+  },
+  crate(c, x, y, w, h) {
+    c.fillStyle = '#6e5334'; c.fillRect(x, y, w, h);
+    c.strokeStyle = 'rgba(0,0,0,.4)'; c.lineWidth = 1;
+    c.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+    c.beginPath(); c.moveTo(x, y); c.lineTo(x + w, y + h); c.moveTo(x + w, y); c.lineTo(x, y + h); c.stroke();
+  },
+  bucket(c, x, y, w, h) {
+    c.fillStyle = '#5a6a78'; c.beginPath();
+    c.moveTo(x, y); c.lineTo(x + w, y); c.lineTo(x + w - 2, y + h); c.lineTo(x + 2, y + h); c.closePath(); c.fill();
+    c.strokeStyle = '#8a9aa8'; c.lineWidth = 1; c.beginPath(); c.arc(x + w / 2, y, w / 2 - 1, Math.PI, 0); c.stroke();
+  },
+  boiler(c, x, y, w, h) {
+    c.fillStyle = '#6a6a72'; rr(c, x, y, w, h, 5); c.fill();
+    c.fillStyle = '#8a8a92'; rr(c, x + 3, y + 3, w - 6, h - 6, 4); c.fill();
+    c.fillStyle = '#3a3a42'; c.fillRect(x + w * 0.25, y - 8, 4, 10);
+    c.fillStyle = '#c94a4a'; c.beginPath(); c.arc(x + w / 2, y + h * 0.36, 4, 0, TAU); c.fill();
+    c.fillStyle = '#2a2a30'; c.fillRect(x + w * 0.2, y + h - 10, w * 0.6, 4);
+  },
+  skis(c, x, y, w, h) {
+    c.strokeStyle = '#b8a04a'; c.lineWidth = 2;
+    for (let i = 0; i < 2; i++) { c.beginPath(); c.moveTo(x, y + i * 4); c.lineTo(x + w, y + i * 4); c.stroke(); }
+    c.strokeStyle = '#6a6050'; c.lineWidth = 1;
+    for (let i = 0; i < 3; i++) { c.beginPath(); c.moveTo(x + 8 + i * 12, y); c.lineTo(x + 8 + i * 12, y + 6); c.stroke(); }
+  },
+  mirror(c, x, y, w, h) {
+    c.fillStyle = '#5a4a3a'; c.fillRect(x, y, w, h);
+    const g = c.createLinearGradient(x, y, x + w, y + h);
+    g.addColorStop(0, '#8aa0b8'); g.addColorStop(0.5, '#c8d8e8'); g.addColorStop(1, '#6a7a90');
+    c.fillStyle = g; c.fillRect(x + 2, y + 2, w - 4, h - 4);
+    c.strokeStyle = 'rgba(255,255,255,.4)'; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(x + 4, y + h - 6); c.lineTo(x + w - 6, y + 4); c.stroke();
+  },
+  icons(c, x, y, w, h) {
+    c.fillStyle = '#8a6a3a'; c.fillRect(x, y, w, h);
+    c.fillStyle = '#e8d9a8'; c.fillRect(x + 2, y + 2, w - 4, h - 4);
+    c.strokeStyle = '#c9a24a'; c.lineWidth = 0.8; c.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+    c.fillStyle = '#a83a3a'; c.fillRect(x + w / 2 - 1, y + 3, 2, h - 6);
+  },
+};
+
+function drawProp(c, id, x, y, w, h) {
+  const fn = PROP_ART[id];
+  if (fn) { try { fn(c, x, y, w, h); } catch (_) { c.fillStyle = '#555'; c.fillRect(x, y, w, h); } }
+  else { c.fillStyle = '#444'; c.fillRect(x, y, w, h); }
+  /* тень под предметом */
+  c.fillStyle = 'rgba(0,0,0,.28)';
+  c.beginPath(); c.ellipse(x + w / 2, y + h, w * 0.48, 2.4, 0, 0, TAU); c.fill();
+}
+
+/* ── Окно с улицей и фонарём ──────────────────────────────────────────── */
+function drawWindow(c, x, y, w, h, lit) {
+  c.fillStyle = '#3a2f2a'; c.fillRect(x - 2, y - 2, w + 4, h + 4);
+  const g = c.createLinearGradient(x, y, x, y + h);
+  if (lit) { g.addColorStop(0, '#2a3a52'); g.addColorStop(1, '#15202e'); }
+  else { g.addColorStop(0, '#1a2438'); g.addColorStop(1, '#0d1420'); }
+  c.fillStyle = g; c.fillRect(x, y, w, h);
+  /* улица за окном: фонарь и огонёк */
+  c.fillStyle = 'rgba(255,207,107,.5)';
+  c.beginPath(); c.arc(x + w * 0.28, y + h * 0.72, 2.6, 0, TAU); c.fill();
+  c.fillStyle = 'rgba(255,207,107,.12)';
+  c.beginPath(); c.arc(x + w * 0.28, y + h * 0.72, 9, 0, TAU); c.fill();
+  /* дождь по стеклу */
+  c.strokeStyle = 'rgba(190,220,255,.22)'; c.lineWidth = 0.7;
+  for (let i = 0; i < 5; i++) {
+    const rx = x + 3 + i * (w - 6) / 4;
+    c.beginPath(); c.moveTo(rx, y + 2); c.lineTo(rx - 1.5, y + h * 0.55); c.stroke();
+  }
+  /* рамы */
+  c.strokeStyle = '#4a3b30'; c.lineWidth = 1.6;
+  c.beginPath(); c.moveTo(x + w / 2, y); c.lineTo(x + w / 2, y + h); c.stroke();
+  c.beginPath(); c.moveTo(x, y + h / 2); c.lineTo(x + w, y + h / 2); c.stroke();
+  c.strokeStyle = 'rgba(0,0,0,.4)'; c.lineWidth = 1; c.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+  /* откос */
+  c.fillStyle = 'rgba(255,255,255,.06)'; c.fillRect(x - 2, y + h + 2, w + 4, 2);
+}
+
+/* ── Лестничная клетка ────────────────────────────────────────────────── */
+function drawStairwell(c, floor, side) {
+  const L = floor.top;
+  const walkL = FH() - SLAB();
+  const x = side === 'left' ? 0 : BW() - SW();
+  const w = SW();
+  drawWallpaper(c, x, 0, w, walkL, '#2f3a3a', floor.k * 77 + (side === 'left' ? 3 : 9), 'tiles');
+  /* низ — тёмная панель */
+  c.fillStyle = 'rgba(24,34,34,.85)'; c.fillRect(x, walkL - 26, w, 26);
+  c.fillStyle = 'rgba(255,255,255,.06)'; c.fillRect(x, walkL - 27, w, 1.5);
+  /* окно */
+  const wx = side === 'left' ? 118 : BW() - SW() + 30;
+  drawWindow(c, wx, walkL - 52, 32, 26, true);
+  /* номер этажа на стене */
+  c.fillStyle = 'rgba(230,225,200,.5)';
+  c.font = '700 13px ' + MONO_FONT;
+  c.textAlign = 'center';
+  c.fillText(String(floor.k), x + w / 2 + (side === 'left' ? 26 : -26), walkL - 40);
+  c.textAlign = 'left';
+  /* перила балкона/марша — декоративная диагональ */
+  const railX = side === 'left' ? x + 40 : x + w - 40;
+  c.strokeStyle = 'rgba(140,150,150,.35)'; c.lineWidth = 1.6;
+  c.beginPath(); c.moveTo(railX, walkL - 34); c.lineTo(railX + 26, walkL); c.stroke();
+  for (let i = 0; i < 5; i++) {
+    const t = i / 5;
+    c.beginPath();
+    c.moveTo(railX + t * 26, walkL - 34 + t * 34);
+    c.lineTo(railX + t * 26, walkL - 6 + t * 34);
+    c.stroke();
+  }
+  /* трубы и провода */
+  c.strokeStyle = 'rgba(120,130,130,.4)'; c.lineWidth = 2;
+  c.beginPath(); c.moveTo(x + 6, 12); c.lineTo(x + w - 6, 12); c.stroke();
+  c.strokeStyle = 'rgba(90,100,100,.35)'; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(x + 6, 18); c.quadraticCurveTo(x + w / 2, 26, x + w - 6, 18); c.stroke();
+  /* объявление */
+  c.fillStyle = 'rgba(220,210,180,.35)'; c.fillRect(side === 'left' ? x + 62 : x + w - 96, walkL - 44, 16, 12);
+}
+
+/* Лестница-стремянка (пожарная), врезанная в перекрытие */
+function drawLadder(c, l, floor) {
+  const yTop = l.yTop - floor.top;
+  const yBot = l.yBottom - floor.top;
+  c.lineCap = 'round';
+  c.strokeStyle = '#7d8a92'; c.lineWidth = 3.4;
+  c.beginPath(); c.moveTo(l.x - 11, yBot); c.lineTo(l.x - 11, yTop); c.stroke();
+  c.beginPath(); c.moveTo(l.x + 11, yBot); c.lineTo(l.x + 11, yTop); c.stroke();
+  c.strokeStyle = '#96a3ab'; c.lineWidth = 2.2;
+  for (let y = yBot - 7; y > yTop; y -= 8) {
+    c.beginPath(); c.moveTo(l.x - 11, y); c.lineTo(l.x + 11, y); c.stroke();
+  }
+  c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(l.x + 11, yTop); c.lineTo(l.x + 11, yBot); c.stroke();
+}
+
+/* ── Коридор ──────────────────────────────────────────────────────────── */
+function drawCorridor(c, corr, floor) {
+  const walkL = FH() - SLAB();
+  const x = corr.x, w = corr.fullW !== undefined ? corr.fullW : corr.w;
+  drawWallpaper(c, x, 0, w, walkL, corr.pal, corr.seed, corr.seed % 3 === 0 ? 'stripes' : 'paint');
+  /* панель снизу */
+  c.fillStyle = 'rgba(18,30,28,.7)'; c.fillRect(x, walkL - 22, w, 22);
+  c.fillStyle = 'rgba(255,255,255,.05)'; c.fillRect(x, walkL - 23, w, 1.2);
+  /* потолочные трубы */
+  c.strokeStyle = 'rgba(120,110,95,.35)'; c.lineWidth = 2.2;
+  c.beginPath(); c.moveTo(x, 11); c.lineTo(x + w, 11); c.stroke();
+  c.strokeStyle = 'rgba(90,100,110,.35)'; c.lineWidth = 1.4;
+  c.beginPath(); c.moveTo(x, 16); c.lineTo(x + w, 16); c.stroke();
+  /* почтовые ящики (декор) */
+  if (corr.seed % 4 === 0) {
+    const mx = x + 12;
+    c.fillStyle = '#4a4a52'; c.fillRect(mx, walkL - 46, 30, 22);
+    for (let i = 0; i < 5; i++) for (let j = 0; j < 3; j++) {
+      c.fillStyle = (i + j) % 2 ? '#5d5d68' : '#53535e';
+      c.fillRect(mx + 2 + j * 9, walkL - 44 + i * 4, 7, 2.6);
+    }
+  }
+  /* радиатор под окном */
+  if (corr.window) {
+    c.fillStyle = '#9aa49a';
+    for (let i = 0; i < 7; i++) c.fillRect(corr.window.x + 1 + i * 4.2, walkL - 16, 2.4, 12);
+  }
+  /* лампа на проводе */
+  const lx = corr.lamp.x;
+  c.strokeStyle = 'rgba(180,180,170,.4)'; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(lx, 8); c.lineTo(lx, corr.lamp.y - floor.top + 4); c.stroke();
+  c.fillStyle = '#c9c2a8'; c.beginPath(); c.ellipse(lx, corr.lamp.y - floor.top + 6, 5, 2.4, 0, 0, TAU); c.fill();
+  /* надпись «коридор» */
+}
+
+/* ── Комната ──────────────────────────────────────────────────────────── */
+function drawRoom(c, room, floor) {
+  const walkL = FH() - SLAB();
+  const R = makeRng(room.seed);
+  const style = room.kind === 'bath' ? 'tiles'
+    : room.kind === 'kitchen' ? 'tiles'
+    : R.pick(['stripes', 'flowers', 'diamonds', 'paint', 'plain']);
+  drawWallpaper(c, room.x, 0, room.w, walkL, room.wall, room.seed, style);
+
+  /* ковёр на стене — святое */
+  if (R.chance(0.55) && room.kind !== 'bath') {
+    const cw = 44, ch = 30;
+    const cx = room.x + R.range(16, Math.max(18, room.w - cw - 16));
+    const cy = walkL - 52;
+    c.fillStyle = '#6b2f38'; c.fillRect(cx - 1, cy - 1, cw + 2, ch + 2);
+    c.fillStyle = '#a4474f'; c.fillRect(cx, cy, cw, ch);
+    c.strokeStyle = '#e0c48a'; c.lineWidth = 1;
+    c.strokeRect(cx + 3.5, cy + 3.5, cw - 7, ch - 7);
+    /* орнамент: ромбы и полосы */
+    c.strokeStyle = 'rgba(224,196,138,.42)';
+    c.lineWidth = 0.8;
+    for (let i = 0; i < 4; i++) {
+      const mx = cx + 7 + i * 10;
+      c.beginPath();
+      c.moveTo(mx, cy + ch / 2 - 4);
+      c.lineTo(mx + 3.4, cy + ch / 2);
+      c.lineTo(mx, cy + ch / 2 + 4);
+      c.lineTo(mx - 3.4, cy + ch / 2);
+      c.closePath(); c.stroke();
+    }
+    c.fillStyle = 'rgba(224,196,138,.28)';
+    c.fillRect(cx + 3, cy + 3, cw - 6, 1);
+    c.fillRect(cx + 3, cy + ch - 4, cw - 6, 1);
+    /* бахрома */
+    c.strokeStyle = 'rgba(230,215,180,.35)';
+    c.lineWidth = 0.7;
+    for (let i = 0; i < 9; i++) {
+      c.beginPath(); c.moveTo(cx + 2 + i * 5, cy - 1); c.lineTo(cx + 2 + i * 5, cy - 4); c.stroke();
+      c.beginPath(); c.moveTo(cx + 2 + i * 5, cy + ch + 1); c.lineTo(cx + 2 + i * 5, cy + ch + 4); c.stroke();
+    }
+    /* перекладина, на которой висит ковёр */
+    c.fillStyle = 'rgba(40,30,26,.6)';
+    c.fillRect(cx - 3, cy - 2.5, cw + 6, 1.6);
+  }
+  /* окно */
+  if (room.window) drawWindow(c, room.window.x, room.window.y - floor.top, room.window.w, room.window.h, R.chance(0.5));
+  /* подоконник + радиатор */
+  if (room.window) {
+    c.fillStyle = '#6a5a48'; c.fillRect(room.window.x - 3, room.window.y - floor.top + room.window.h, room.window.w + 6, 2);
+    c.fillStyle = '#95a095';
+    for (let i = 0; i < 8; i++) c.fillRect(room.window.x + i * 4, walkL - 15, 2.2, 11);
+  }
+  /* мебель */
+  for (const p of room.props) drawProp(c, p.id, p.x, p.y - floor.top, p.w, p.h);
+  /* лампа */
+  const lx = room.lamp.x;
+  c.strokeStyle = 'rgba(180,180,170,.4)'; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(lx, 8); c.lineTo(lx, room.lamp.y - floor.top + 4); c.stroke();
+  c.fillStyle = '#d8d2b8';
+  c.beginPath(); c.moveTo(lx - 8, room.lamp.y - floor.top + 8); c.lineTo(lx + 8, room.lamp.y - floor.top + 8);
+  c.lineTo(lx + 4, room.lamp.y - floor.top + 1); c.lineTo(lx - 4, room.lamp.y - floor.top + 1); c.closePath(); c.fill();
+  /* свеча */
+  if (room.candle) {
+    c.fillStyle = '#e8e0c8'; c.fillRect(room.candle.x - 2, room.candle.y - floor.top - 8, 4, 8);
+    c.fillStyle = '#ffb43d'; c.fillRect(room.candle.x - 1, room.candle.y - floor.top - 10, 2, 2.5);
+  }
+  /* плинтус */
+  c.fillStyle = 'rgba(0,0,0,.18)'; c.fillRect(room.x, walkL - 3, room.w, 3);
+}
+
+/* ── Подвал ───────────────────────────────────────────────────────────── */
+function drawBasement(c, room, floor) {
+  const walkL = FH() - SLAB();
+  drawWallpaper(c, room.x, 0, room.w, walkL, '#2a2c30', 4242, 'paint');
+  c.fillStyle = 'rgba(14,16,18,.8)'; c.fillRect(room.x, 0, room.w, walkL);
+  /* бетонные швы */
+  c.strokeStyle = 'rgba(255,255,255,.04)'; c.lineWidth = 1;
+  for (let x = room.x; x < room.x + room.w; x += 46) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, walkL); c.stroke(); }
+  /* трубы */
+  for (let i = 0; i < 3; i++) {
+    c.strokeStyle = i === 0 ? 'rgba(150,90,60,.5)' : 'rgba(130,130,130,.35)';
+    c.lineWidth = 3 - i * 0.6;
+    c.beginPath(); c.moveTo(room.x, 10 + i * 5); c.lineTo(room.x + room.w, 10 + i * 5); c.stroke();
+  }
+  /* лужи */
+  c.fillStyle = 'rgba(60,90,110,.20)';
+  c.beginPath(); c.ellipse(room.x + room.w * 0.35, walkL - 2, 30, 3.4, 0, 0, TAU); c.fill();
+  c.beginPath(); c.ellipse(room.x + room.w * 0.62, walkL - 2, 20, 2.6, 0, 0, TAU); c.fill();
+  /* мебель подвала */
+  for (const p of room.props) drawProp(c, p.id, p.x, p.y - floor.top, p.w, p.h);
+  /* табличка */
+  c.fillStyle = 'rgba(200,190,160,.28)'; c.fillRect(room.x + room.w * 0.5, walkL - 40, 34, 12);
+  c.fillStyle = 'rgba(20,20,20,.5)'; c.font = '5px ' + MONO_FONT; c.fillText('ЩИТОВАЯ', room.x + room.w * 0.5 + 4, walkL - 32);
+  /* лампа на проводе */
+  const lx = room.x + 300;
+  c.strokeStyle = 'rgba(150,150,140,.35)'; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(lx, 4); c.lineTo(lx, 22); c.stroke();
+  c.fillStyle = '#b8b2a0'; c.beginPath(); c.arc(lx, 24, 3, 0, TAU); c.fill();
+}
+
+/* ── Перекрытие (плита) с дырками ─────────────────────────────────────── */
+function drawSlab(c, floor) {
+  const walkL = FH() - SLAB();
+  const holes = world.ladders.filter((l) => l.to === floor.k).map((l) => ({ x: l.x - 16, w: 32 }));
+  holes.push({ x: world.shaft.x, w: world.shaft.w });
+  holes.sort((a, b) => a.x - b.x);
+  c.fillStyle = '#24202a';
+  let sx = 0;
+  for (const h of holes) {
+    if (h.x > sx) c.fillRect(sx, walkL, h.x - sx, SLAB());
+    sx = h.x + h.w;
+  }
+  if (sx < BW()) c.fillRect(sx, walkL, BW() - sx, SLAB());
+  /* верхняя кромка плиты — светлая */
+  c.fillStyle = 'rgba(255,255,255,.07)';
+  sx = 0;
+  for (const h of holes) {
+    if (h.x > sx) c.fillRect(sx, walkL, h.x - sx, 1);
+    sx = h.x + h.w;
+  }
+  if (sx < BW()) c.fillRect(sx, walkL, BW() - sx, 1);
+  /* тень под перекрытием */
+  c.fillStyle = 'rgba(0,0,0,.35)';
+  c.fillRect(0, walkL + SLAB(), BW(), 2);
+}
+
+/* ── Запекание этажа ──────────────────────────────────────────────────── */
+function bakeFloor(floor) {
+  const cv = document.createElement('canvas');
+  cv.width = Math.round(BW() * BAKE);
+  cv.height = Math.round(FH() * BAKE);
+  const c = cv.getContext('2d');
+  c.scale(BAKE, BAKE);
+  const walkL = FH() - SLAB();
+
+  /* фон: тёмная глубина по умолчанию (для лестниц и щелей) */
+  c.fillStyle = '#12101a';
+  c.fillRect(0, 0, BW(), FH());
+
+  if (floor.isBasement) {
+    drawBasement(c, floor.rooms[0], floor);
+  } else {
+    drawStairwell(c, floor, 'left');
+    drawStairwell(c, floor, 'right');
+
+    for (const corr of floor.corridors) drawCorridor(c, corr, floor);
+    for (const room of floor.rooms) drawRoom(c, room, floor);
+
+    /* стены между сегментами */
+    for (const seg of floor.segs) {
+      if (seg.t !== 'corr') continue;
+      /* левая граница сегмента — стена с проёмом */
+    }
+    /* вертикальные стены-разделители с проёмами */
+    const walls = floor.segs;
+    for (let i = 1; i < walls.length; i++) {
+      const wx = walls[i].x - 2;
+      const isRoom = walls[i].t === 'room' || walls[i - 1].t === 'room';
+      const doorH = CONFIG.building.doorH;
+      c.fillStyle = '#191521';
+      if (isRoom) {
+        c.fillRect(wx, 0, 4, walkL - doorH);
+        /* наличник */
+        c.fillStyle = '#3a3040'; c.fillRect(wx - 2, walkL - doorH - 2, 8, 3);
+      } else {
+        c.fillRect(wx, 0, 4, walkL);
+      }
+      /* дверь: полотно приоткрыто */
+      if (isRoom) {
+        c.fillStyle = '#5a3f2c';
+        c.fillRect(wx - 8, walkL - doorH + 2, 3, doorH - 2);
+        c.fillStyle = '#c9a86a'; c.fillRect(wx - 6, walkL - doorH / 2, 1.5, 3);
+      }
+    }
+    /* дверные проёмы между лестницей и коридором */
+    c.fillStyle = 'rgba(0,0,0,.25)';
+    c.fillRect(SW() - 3, 0, 6, walkL);
+    c.fillRect(BW() - SW() - 3, 0, 6, walkL);
+  }
+
+  /* лестницы */
+  for (const l of world.ladders) {
+    if (l.k === floor.k || l.to === floor.k) {
+      /* рисуем только ту часть, что в этом этаже */
+      const yTopLocal = Math.max(0, l.yTop - floor.top);
+      const yBotLocal = Math.min(walkL, l.yBottom - floor.top);
+      if (yBotLocal > yTopLocal) {
+        c.save();
+        c.beginPath(); c.rect(0, 0, BW(), walkL); c.clip();
+        const fake = { x: l.x, yTop: yTopLocal + floor.top, yBottom: yBotLocal + floor.top };
+        drawLadder(c, fake, floor);
+        c.restore();
+      }
+    }
+  }
+
+  /* перекрытие */
+  drawSlab(c, floor);
+
+  /* шахта лифта: тёмный колодец */
+  const sx0 = world.shaft.x, sw = world.shaft.w;
+  c.fillStyle = '#08070c';
+  c.fillRect(sx0, 0, sw, walkL);
+  c.strokeStyle = 'rgba(120,130,150,.16)'; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(sx0 + 6, 0); c.lineTo(sx0 + 6, walkL); c.stroke();
+  c.beginPath(); c.moveTo(sx0 + sw - 6, 0); c.lineTo(sx0 + sw - 6, walkL); c.stroke();
+  for (let y = 0; y < walkL; y += 7) {
+    c.strokeStyle = 'rgba(120,130,150,.10)';
+    c.beginPath(); c.moveTo(sx0 + 6, y); c.lineTo(sx0 + 6, y + 4); c.stroke();
+    c.beginPath(); c.moveTo(sx0 + sw - 6, y); c.lineTo(sx0 + sw - 6, y + 4); c.stroke();
+  }
+  /* створка-стена шахты будет динамической */
+
+
+  /* общая атмосфера: тень от потолка */
+  const g = c.createLinearGradient(0, 0, 0, 14);
+  g.addColorStop(0, 'rgba(0,0,0,.5)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+  c.fillStyle = g; c.fillRect(0, 0, BW(), 14);
+
+  return cv;
+}
+
+function bakeAll() {
+  floorCanvases.length = 0;
+  for (const fl of world.floors) floorCanvases.push(bakeFloor(fl));
+}
+const floorCanvases = [];
+const MONO_FONT = 'ui-monospace, "SF Mono", Menlo, Consolas, monospace';
+
+/* ───────────────────────────── G2. ФОН: ГОРОД И УЛИЦА ───────────────────── */
+const bg = { skyline: null, street: null, moon: { x: 0.78, y: 0.18 } };
+
+function makeCanvas(w, h) {
+  const c = document.createElement('canvas');
+  c.width = Math.round(w); c.height = Math.round(h);
+  return c;
+}
+function blurCanvas(src, px) {
+  const out = makeCanvas(src.width, src.height);
+  const o = out.getContext('2d');
+  try { o.filter = `blur(${px}px)`; } catch (_) {}
+  o.drawImage(src, 0, 0);
+  return out;
+}
+
+function bakeSkyline() {
+  const W = 1600, H = 320;
+  const c = makeCanvas(W, H);
+  const g = c.getContext('2d');
+  const R = makeRng(77);
+  /* дальние башни */
+  for (let layer = 0; layer < 2; layer++) {
+    const base = layer === 0 ? '#0e1024' : '#141830';
+    let x = -40;
+    while (x < W + 40) {
+      const w = R.range(40, 110);
+      const h = R.range(60, layer === 0 ? 200 : 150);
+      g.fillStyle = base;
+      g.fillRect(x, H - h, w, h);
+      /* окна */
+      if (layer === 1) {
+        for (let wy = H - h + 8; wy < H - 10; wy += 9) {
+          for (let wx = x + 5; wx < x + w - 5; wx += 8) {
+            if (R.chance(0.18)) {
+              g.fillStyle = R.pick(['rgba(255,210,130,.55)', 'rgba(180,210,255,.35)', 'rgba(255,160,120,.35)']);
+              g.fillRect(wx, wy, 3, 4);
+            }
+          }
+        }
+      }
+      /* антенны */
+      if (R.chance(0.25)) {
+        g.strokeStyle = base; g.lineWidth = 1.5;
+        g.beginPath(); g.moveTo(x + w / 2, H - h); g.lineTo(x + w / 2, H - h - R.range(10, 40)); g.stroke();
+      }
+      x += w + R.range(4, 16);
+    }
+  }
+  /* заводская труба и дым — очень 90-е */
+  g.fillStyle = '#101226';
+  g.fillRect(1180, H - 250, 22, 250);
+  g.fillStyle = 'rgba(160,170,200,.10)';
+  for (let i = 0; i < 5; i++) {
+    g.beginPath(); g.arc(1191 + i * 14, H - 262 - i * 10, 14 + i * 5, 0, TAU); g.fill();
+  }
+  return blurCanvas(c, 3.2);
+}
+
+function bakeStreet() {
+  const W = 1600, H = 230;
+  const c = makeCanvas(W, H);
+  const g = c.getContext('2d');
+  const R = makeRng(1993);
+  /* глухая стена домов напротив */
+  g.fillStyle = '#0e0c18';
+  g.fillRect(0, 40, W, H - 40);
+  for (let x = 0; x < W; x += 90) {
+    g.fillStyle = 'rgba(255,255,255,.03)';
+    g.fillRect(x, 40, 2, H);
+  }
+  /* окна напротив */
+  for (let x = 12; x < W - 20; x += R.range(26, 60)) {
+    for (let y = 60; y < H - 40; y += R.range(26, 44)) {
+      if (R.chance(0.42)) {
+        g.fillStyle = R.pick(['rgba(255,206,130,.85)', 'rgba(255,150,120,.65)', 'rgba(150,200,255,.55)', 'rgba(180,255,200,.5)']);
+        g.fillRect(x, y, R.range(5, 9), R.range(5, 8));
+        g.fillStyle = 'rgba(255,220,160,.12)';
+        g.fillRect(x - 2, y - 2, R.range(9, 13), R.range(9, 12));
+      }
+    }
+  }
+  /* тротуар */
+  g.fillStyle = '#191824';
+  g.fillRect(0, H - 44, W, 44);
+  g.fillStyle = 'rgba(255,255,255,.045)';
+  for (let x = 0; x < W; x += 30) g.fillRect(x, H - 44, 1, 44);
+  /* ларьки с неоном */
+  const kioskX = [120, 470, 860, 1240];
+  const signs = [
+    ['ШАУРМА', '#ff4d7a'], ['СЕМЕЧКИ', '#ffcf6b'], ['24 ЧАСА', '#52e0c0'], ['ВИДЕОПРОКАТ', '#8a63ff'],
+  ];
+  kioskX.forEach((kx, i) => {
+    const [txt, col] = signs[i];
+    g.fillStyle = '#221b2c';
+    g.fillRect(kx, H - 96, 74, 52);
+    g.fillStyle = '#2c2438';
+    g.fillRect(kx + 4, H - 92, 66, 30);
+    g.fillStyle = 'rgba(255,220,150,.25)';
+    g.fillRect(kx + 8, H - 88, 58, 20);
+    /* вывеска */
+    /* свечение вывески */
+    const sg = g.createRadialGradient(kx + 37, H - 104, 2, kx + 37, H - 104, 60);
+    sg.addColorStop(0, withAlpha(col, 0.55));
+    sg.addColorStop(1, withAlpha(col, 0));
+    g.fillStyle = sg; g.fillRect(kx - 40, H - 150, 160, 100);
+    g.fillStyle = col;
+    g.fillRect(kx - 3, H - 110, 80, 13);
+    g.fillStyle = '#0a0810';
+    g.font = '700 9px ' + MONO_FONT;
+    g.textAlign = 'center';
+    g.fillText(txt, kx + 37, H - 100);
+    g.textAlign = 'left';
+  });
+  /* фонари с конусами */
+  for (let x = 60; x < W; x += 210) {
+    g.strokeStyle = '#2a2a36'; g.lineWidth = 3;
+    g.beginPath(); g.moveTo(x, H - 44); g.lineTo(x, H - 150); g.stroke();
+    g.beginPath(); g.moveTo(x, H - 150); g.lineTo(x + 22, H - 156); g.stroke();
+    const lg = g.createRadialGradient(x + 22, H - 154, 0, x + 22, H - 154, 44);
+    lg.addColorStop(0, 'rgba(255,222,160,.95)');
+    lg.addColorStop(0.4, 'rgba(255,214,140,.35)');
+    lg.addColorStop(1, 'rgba(255,214,140,0)');
+    g.fillStyle = lg; g.beginPath(); g.arc(x + 22, H - 154, 44, 0, TAU); g.fill();
+    /* конус на асфальт */
+    const cg = g.createLinearGradient(0, H - 154, 0, H - 30);
+    cg.addColorStop(0, 'rgba(255,214,140,.16)');
+    cg.addColorStop(1, 'rgba(255,214,140,0)');
+    g.fillStyle = cg;
+    g.beginPath(); g.moveTo(x + 22, H - 152); g.lineTo(x + 62, H - 30); g.lineTo(x - 18, H - 30); g.closePath(); g.fill();
+  }
+  /* деревья */
+  for (let x = 330; x < W; x += 420) {
+    g.fillStyle = '#141a1c';
+    g.beginPath(); g.arc(x, H - 120, 30, 0, TAU); g.fill();
+    g.fillRect(x - 3, H - 120, 6, 78);
+  }
+  /* лужи с отражениями */
+  for (let i = 0; i < 8; i++) {
+    const x = R.range(0, W), y = H - R.range(12, 30);
+    g.fillStyle = 'rgba(90,140,190,.14)';
+    g.beginPath(); g.ellipse(x, y, R.range(14, 34), 3.5, 0, 0, TAU); g.fill();
+    g.fillStyle = 'rgba(255,190,120,.18)';
+    g.beginPath(); g.ellipse(x, y - 1, R.range(4, 12), 1.6, 0, 0, TAU); g.fill();
+  }
+  /* провода */
+  g.strokeStyle = 'rgba(10,10,16,.8)'; g.lineWidth = 1.2;
+  for (let i = 0; i < 4; i++) {
+    const y0 = 28 + i * 9;
+    g.beginPath();
+    g.moveTo(0, y0);
+    for (let x = 0; x <= W; x += 80) g.quadraticCurveTo(x - 40, y0 + 12, x, y0);
+    g.stroke();
+  }
+  return blurCanvas(c, 2.6);
+}
+
+function bakeBackdrop() {
+  bg.skyline = bakeSkyline();
+  bg.street = bakeStreet();
+}
+
+/* ───────────────────────────── G3. СВЕТ ──────────────────────────────────── */
+const lightCv = makeCanvas(4, 4);
+const lctx = lightCv.getContext('2d');
+
+function resizeLight() {
+  lightCv.width = Math.max(4, Math.round(view.w * view.dpr));
+  lightCv.height = Math.max(4, Math.round(view.h * view.dpr));
+}
+window.addEventListener('resize', resizeLight);
+
+function lightScreen(x, y) {
+  return { x: (x - game.cam.x) * game.cam.zoom * view.dpr, y: (y - game.cam.y) * game.cam.zoom * view.dpr };
+}
+
+/* Луч фонаря: веер лучей, каждый упирается в первую стену. */
+function torchPolygon() {
+  const p = game.player;
+  const ox = p.x + p.w / 2 + p.dir * 4;
+  const oy = p.y + p.h * 0.42;
+  const range = CONFIG.player.torchRange;
+  const spread = CONFIG.player.torchSpread;
+  const baseAng = p.dir > 0 ? 0 : Math.PI;
+  const pts = [{ x: ox, y: oy }];
+  const N = 18;
+  const near = SOLIDS.length ? SOLIDS : world.solids;
+  for (let i = 0; i <= N; i++) {
+    const a = baseAng - spread + (2 * spread * i) / N;
+    const dx = Math.cos(a), dy = Math.sin(a) * 0.9;
+    let t = range;
+    for (const s of near) {
+      if (Math.abs(s.x + s.w / 2 - ox) > range + 60 || Math.abs(s.y + s.h / 2 - oy) > range + 60) continue;
+      const hit = rayRect(ox, oy, dx, dy, s, t);
+      if (hit < t) t = hit;
+    }
+    pts.push({ x: ox + dx * t, y: oy + dy * t });
+  }
+  return pts;
+}
+
+function drawLighting() {
+  const dark = clamp(CONFIG.light.darkness * (1 - 0.22 * world.powerStage) + (game.mode === 'ending' ? -0.2 * Math.min(1, game.endingT) : 0), 0.18, 0.97);
+  lctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+  lctx.globalCompositeOperation = 'source-over';
+  lctx.clearRect(0, 0, view.w, view.h);
+  lctx.fillStyle = `rgba(7,7,18,${dark})`;
+  lctx.fillRect(0, 0, view.w, view.h);
+  lctx.globalCompositeOperation = 'destination-out';
+
+  const Z = game.cam.zoom;
+  const toScr = (x, y) => [(x - game.cam.x) * Z, (y - game.cam.y) * Z];
+
+  /* лампы, окна, свечи */
+  for (const l of world.lights) {
+    if (!l.on) continue;
+    const [sx, sy] = toScr(l.x, l.y);
+    const r = l.r * 1.25 * Z;
+    if (sx + r < 0 || sx - r > view.w || sy + r < 0 || sy - r > view.h) continue;
+    const g = lctx.createRadialGradient(sx, sy, 0, sx, sy, r);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.4, 'rgba(255,255,255,.72)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    lctx.save();
+    lctx.translate(sx, sy);
+    lctx.scale(1, 0.72);
+    lctx.translate(-sx, -sy);
+    lctx.fillStyle = g;
+    lctx.beginPath(); lctx.arc(sx, sy, r, 0, TAU); lctx.fill();
+    lctx.restore();
+  }
+  /* окна: холодный свет с улицы */
+  for (const w of world.windows) {
+    const [sx, sy] = toScr(w.x + w.w / 2, w.y + w.h / 2);
+    const r = 118 * Z;
+    if (sx + r < 0 || sx - r > view.w || sy + r < 0 || sy - r > view.h) continue;
+    const g = lctx.createRadialGradient(sx, sy, 0, sx, sy, r);
+    g.addColorStop(0, 'rgba(255,255,255,.75)');
+    g.addColorStop(0.4, 'rgba(255,255,255,.38)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    lctx.save();
+    lctx.translate(sx, sy); lctx.scale(1, 0.85); lctx.translate(-sx, -sy);
+    lctx.fillStyle = g;
+    lctx.beginPath(); lctx.arc(sx, sy, r, 0, TAU); lctx.fill();
+    lctx.restore();
+  }
+  /* щиток: зелёный огонёк в темноте */
+  const sb = world.switchboard;
+  if (sb) {
+    const [sx, sy] = toScr(sb.x + sb.w / 2, sb.y + 6);
+    const g = lctx.createRadialGradient(sx, sy, 0, sx, sy, 26 * Z);
+    g.addColorStop(0, 'rgba(255,255,255,.5)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    lctx.fillStyle = g; lctx.beginPath(); lctx.arc(sx, sy, 26 * Z, 0, TAU); lctx.fill();
+  }
+  /* лифт светится изнутри */
+  const el = world.elevator;
+  if (el.powered) {
+    const [sx, sy] = toScr(el.x + el.w / 2, el.y + 10);
+    const g = lctx.createRadialGradient(sx, sy, 0, sx, sy, 40 * Z);
+    g.addColorStop(0, 'rgba(255,255,255,.6)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    lctx.fillStyle = g; lctx.beginPath(); lctx.arc(sx, sy, 40 * Z, 0, TAU); lctx.fill();
+  }
+
+  /* фонарь */
+  const p = game.player;
+  if (p) {
+    const [cx, cy] = toScr(p.x + p.w / 2, p.y + p.h * 0.42);
+    /* чутьё вокруг игрока */
+    const ar = CONFIG.light.ambientR * Z;
+    const ag = lctx.createRadialGradient(cx, cy, 0, cx, cy, ar);
+    ag.addColorStop(0, 'rgba(255,255,255,.85)');
+    ag.addColorStop(1, 'rgba(255,255,255,0)');
+    lctx.fillStyle = ag; lctx.beginPath(); lctx.arc(cx, cy, ar, 0, TAU); lctx.fill();
+
+    if (game.torch.on && game.torch.battery > 0) {
+      const poly = torchPolygon();
+      lctx.beginPath();
+      poly.forEach((pt, i) => {
+        const [sx, sy] = toScr(pt.x, pt.y);
+        if (i === 0) lctx.moveTo(sx, sy); else lctx.lineTo(sx, sy);
+      });
+      lctx.closePath();
+      const rg = lctx.createRadialGradient(cx, cy, 2, cx, cy, CONFIG.player.torchRange * Z);
+      rg.addColorStop(0, 'rgba(255,255,255,.95)');
+      rg.addColorStop(0.55, 'rgba(255,255,255,.72)');
+      rg.addColorStop(1, 'rgba(255,255,255,0)');
+      lctx.fillStyle = rg;
+      lctx.fill();
+      /* светящееся пятно у руки */
+      const hg = lctx.createRadialGradient(cx, cy, 0, cx, cy, 22 * Z);
+      hg.addColorStop(0, 'rgba(255,255,255,1)');
+      hg.addColorStop(1, 'rgba(255,255,255,0)');
+      lctx.fillStyle = hg; lctx.beginPath(); lctx.arc(cx, cy, 22 * Z, 0, TAU); lctx.fill();
+    }
+  }
+
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.drawImage(lightCv, 0, 0);
+  ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+}
+
+/* Аддитивные блики поверх темноты */
+function drawGlows(dt) {
+  const cam = game.cam;
+  ctx.save();
+  ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+  ctx.globalCompositeOperation = 'lighter';
+  const toScr = (x, y) => [(x - cam.x) * cam.zoom, (y - cam.y) * cam.zoom];
+  for (const l of world.lights) {
+    if (!l.on) continue;
+    const [sx, sy] = toScr(l.x, l.y);
+    if (sx < -80 || sx > view.w + 80 || sy < -80 || sy > view.h + 80) continue;
+    const r = l.r * cam.zoom * 0.85;
+    const g = ctx.createRadialGradient(sx, sy, 0, sx, sy, r);
+    g.addColorStop(0, withAlpha(l.color, 0.22));
+    g.addColorStop(0.5, withAlpha(l.color, 0.07));
+    g.addColorStop(1, withAlpha(l.color, 0));
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(sx, sy, r, 0, TAU); ctx.fill();
+  }
+  /* блик от фонаря */
+  const p = game.player;
+  if (p && game.torch.on && game.torch.battery > 0) {
+    const [px, py] = toScr(p.x + p.w / 2 + p.dir * 40, p.y + p.h * 0.42);
+    const r = 60 * cam.zoom;
+    const g = ctx.createRadialGradient(px, py, 0, px, py, r);
+    g.addColorStop(0, 'rgba(255,220,160,.10)');
+    g.addColorStop(1, 'rgba(255,220,160,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(px, py, r, 0, TAU); ctx.fill();
+  }
+  ctx.restore();
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+/* ───────────────────────────── G4. СУЩНОСТИ ──────────────────────────────── */
+function shadowEllipse(x, y, w) {
+  ctx.fillStyle = 'rgba(0,0,0,.35)';
+  ctx.beginPath(); ctx.ellipse(x, y, w * 0.55, 2.2, 0, 0, TAU); ctx.fill();
+}
+
+function drawPlayer(p) {
+  const t = game.time;
+  const x = p.x, y = p.y;
+  const dir = p.dir >= 0 ? 1 : -1;
+  const moving = Math.abs(p.vx) > 12 && p.onGround;
+  const swing = moving ? Math.sin(p.anim) : Math.sin(t * 1.6) * 0.12;
+  const bob = moving ? Math.abs(Math.sin(p.anim)) * 0.7 : Math.sin(t * 1.4) * 0.4;
+  shadowEllipse(x + p.w / 2, y + p.h + 1, p.w);
+
+  ctx.save();
+  ctx.translate(x + p.w / 2, y + bob);
+  ctx.scale(dir, 1);
+
+  const hurt = p.hurtFlash > 0.02;
+  const blink = p.invuln > 0 && Math.floor(game.time * 14) % 2 === 0;
+
+  /* рюкзак */
+  ctx.fillStyle = '#6a4a2c';
+  rr(ctx, -9, 9, 6, 10, 2); ctx.fill();
+  /* ноги */
+  ctx.fillStyle = '#2c3a52';
+  ctx.fillRect(-4 + swing * 2, 18, 3.2, 7 - Math.abs(swing) * 1.6);
+  ctx.fillRect(0.8 - swing * 2, 18, 3.2, 7 - Math.abs(swing) * 1.6);
+  ctx.fillStyle = '#1b2432';
+  ctx.fillRect(-4.2 + swing * 2, 24.4, 3.8, 2);
+  ctx.fillRect(0.6 - swing * 2, 24.4, 3.8, 2);
+  /* куртка */
+  const jacket = hurt ? '#a8334a' : '#2f5a7a';
+  ctx.fillStyle = jacket;
+  rr(ctx, -6, 8, 12, 11, 3); ctx.fill();
+  ctx.fillStyle = hurt ? '#d05a70' : '#3f7098';
+  rr(ctx, -6, 8, 12, 4, 3); ctx.fill();
+  /* шарф */
+  ctx.fillStyle = '#c2453d';
+  ctx.fillRect(-6, 7, 12, 3);
+  ctx.fillRect(-7, 9, 4, 2.4);
+  /* руки */
+  ctx.fillStyle = jacket;
+  const arm = p.climbing ? -6 : swing * 3;
+  ctx.fillRect(-7.4, 10 + arm * 0.4, 2.6, 8);
+  ctx.fillRect(4.8, 10 - arm * 0.4, 2.6, 8);
+  /* фонарик в руке */
+  ctx.fillStyle = '#c9c2a8';
+  ctx.fillRect(4.6, 16.4, 5.4, 3);
+  if (game.torch.on && game.torch.battery > 0) {
+    ctx.fillStyle = '#fff2c8';
+    ctx.fillRect(9.4, 17, 2.2, 2.2);
+  }
+  /* голова */
+  ctx.fillStyle = '#e8b48a';
+  rr(ctx, -4.6, 0.6, 9.2, 8, 3); ctx.fill();
+  /* шапка */
+  ctx.fillStyle = '#d9a441';
+  rr(ctx, -5.2, -1.4, 10.4, 5.4, 2.6); ctx.fill();
+  ctx.fillStyle = '#f0c46a';
+  ctx.fillRect(-5.2, 2.4, 10.4, 1.6);
+  ctx.beginPath(); ctx.arc(0, -2, 1.8, 0, TAU); ctx.fillStyle = '#f5e2b0'; ctx.fill();
+  /* лицо */
+  if (!blink) {
+    ctx.fillStyle = '#1a1420';
+    ctx.fillRect(0.6, 3.4, 1.5, 1.8);
+    ctx.fillRect(3.2, 3.4, 1.5, 1.8);
+    ctx.fillStyle = '#c98a6a';
+    ctx.fillRect(1.2, 6.2, 2.6, 0.9);
+  }
+  ctx.restore();
+}
+
+function eyeGlint(x, y, color, r) {
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r * 4);
+  g.addColorStop(0, withAlpha(color, 0.85));
+  g.addColorStop(1, withAlpha(color, 0));
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(x, y, r * 4, 0, TAU); ctx.fill();
+  ctx.restore();
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
+}
+
+function drawGranny(e) {
+  const t = game.time;
+  const x = e.x, y = e.y;
+  const bob = Math.sin(t * 6 + e.phase) * 0.8;
+  shadowEllipse(x + e.w / 2, y + e.h + 1, e.w);
+  ctx.save();
+  ctx.translate(x + e.w / 2, y + bob);
+  ctx.scale(e.dir >= 0 ? 1 : -1, 1);
+  /* платье */
+  ctx.fillStyle = '#4a3a56';
+  ctx.beginPath();
+  ctx.moveTo(-6, 10); ctx.lineTo(6, 10); ctx.lineTo(8, 24); ctx.lineTo(-8, 24); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#5d4a6b';
+  ctx.fillRect(-6, 10, 12, 3);
+  /* ноги */
+  ctx.fillStyle = '#2a2232';
+  ctx.fillRect(-4, 22, 3, 2.4); ctx.fillRect(1, 22, 3, 2.4);
+  /* голова */
+  ctx.fillStyle = '#e8c4a6';
+  ctx.beginPath(); ctx.arc(0, 6, 4.6, 0, TAU); ctx.fill();
+  /* платок */
+  ctx.fillStyle = '#a8455c';
+  ctx.beginPath(); ctx.arc(0, 6, 5, Math.PI, 0); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-5, 6); ctx.lineTo(5, 6); ctx.lineTo(-1, 12); ctx.closePath(); ctx.fill();
+  /* очки */
+  ctx.strokeStyle = '#d8d0b0'; ctx.lineWidth = 0.8;
+  ctx.beginPath(); ctx.arc(-2, 6, 1.6, 0, TAU); ctx.stroke();
+  ctx.beginPath(); ctx.arc(2, 6, 1.6, 0, TAU); ctx.stroke();
+  /* скалка */
+  const sw = e.state === 'chase' ? Math.sin(t * 18) * 0.8 : 0.2;
+  /* глаза светятся в темноте */
+  ctx.restore();
+  eyeGlint(x + e.w / 2 + (e.dir >= 0 ? 1.4 : -1.4), y + 5, e.state === 'chase' ? '#ff8aa8' : '#e8d8a0', 0.9);
+  ctx.save();
+  ctx.translate(x + e.w / 2, y + bob);
+  ctx.scale(e.dir >= 0 ? 1 : -1, 1);
+  ctx.save();
+  ctx.translate(6, 12);
+  ctx.rotate(-0.6 + sw);
+  ctx.fillStyle = '#c9a86a'; ctx.fillRect(-1.4, -8, 2.8, 12);
+  ctx.fillStyle = '#8a6a3a'; ctx.fillRect(-1.8, -9, 3.6, 2.2);
+  ctx.restore();
+  ctx.restore();
+  if (e.state === 'chase') {
+    ctx.fillStyle = '#ff4d7a';
+    ctx.font = '700 10px ' + MONO_FONT;
+    ctx.textAlign = 'center';
+    ctx.fillText('!', x + e.w / 2, y - 4);
+    ctx.textAlign = 'left';
+  }
+}
+
+function drawDog(e) {
+  const t = game.time;
+  const x = e.x, y = e.y;
+  const run = e.state === 'chase' ? 1.8 : 1;
+  shadowEllipse(x + e.w / 2, y + e.h + 1, e.w);
+  ctx.save();
+  ctx.translate(x + e.w / 2, y);
+  ctx.scale(e.dir >= 0 ? 1 : -1, 1);
+  ctx.fillStyle = '#6a5a48';
+  rr(ctx, -8, 4, 14, 8, 3); ctx.fill();
+  ctx.fillStyle = '#7f6d57';
+  rr(ctx, -9, 2, 6, 6, 2); ctx.fill();       // голова
+  ctx.fillStyle = '#4a3f34';
+  rr(ctx, -12, 0.6, 3, 4, 1); ctx.fill();    // ухо
+  ctx.beginPath(); ctx.moveTo(6, 5); ctx.lineTo(11, 2 + Math.sin(t * 10 * run) * 2); ctx.lineTo(6, 8); ctx.fill();
+  ctx.fillStyle = '#3a2f28';
+  ctx.restore();
+  eyeGlint(x + e.w / 2 + (e.dir >= 0 ? 5 : -5), y + 4, e.state === 'chase' ? '#ff9a80' : '#b8ff4d', 0.8);
+  ctx.save();
+  ctx.translate(x + e.w / 2, y);
+  ctx.scale(e.dir >= 0 ? 1 : -1, 1);
+  const leg = Math.sin(t * 16 * run) * 1.6;
+  ctx.fillRect(-6 + leg, 11.4, 2, 3.6);
+  ctx.fillRect(4 - leg, 11.4, 2, 3.6);
+  ctx.fillStyle = '#1a1420';
+  ctx.fillRect(-8.4, 3.4, 1.4, 1.4);
+  ctx.restore();
+}
+
+function drawBabay(e) {
+  const t = game.time;
+  const x = e.x, y = e.y;
+  const frozen = e.frozen > 0.5;
+  ctx.save();
+  ctx.globalAlpha = frozen ? 0.55 : 0.9 + Math.sin(t * 2 + e.phase) * 0.08;
+  ctx.translate(x + e.w / 2, y);
+  /* рваный силуэт */
+  ctx.fillStyle = frozen ? '#4a6d8a' : '#141020';
+  ctx.beginPath();
+  ctx.moveTo(-7, 30);
+  for (let i = 0; i <= 6; i++) {
+    const px = -7 + (i / 6) * 14;
+    const py = 30 - Math.sin(t * 3 + i + e.phase) * 2.2;
+    ctx.lineTo(px, py);
+  }
+  ctx.lineTo(6, 12); ctx.quadraticCurveTo(7, 4, 0, 3); ctx.quadraticCurveTo(-7, 4, -6, 12);
+  ctx.closePath(); ctx.fill();
+  /* глаза */
+  ctx.fillStyle = frozen ? '#c8f0ff' : '#e8e0ff';
+  ctx.beginPath(); ctx.ellipse(-2.6, 8, 1.5, 2.2, 0, 0, TAU); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(2.6, 8, 1.5, 2.2, 0, 0, TAU); ctx.fill();
+  ctx.fillStyle = '#0a0810';
+  ctx.fillRect(-2.9, 7.6, 1, 1.6); ctx.fillRect(2.3, 7.6, 1, 1.6);
+  ctx.restore();
+  if (frozen) {
+    ctx.strokeStyle = 'rgba(140,220,255,.5)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x - 4, y, e.w + 8, e.h);
+    ctx.fillStyle = 'rgba(160,230,255,.8)';
+    ctx.font = '700 8px ' + MONO_FONT;
+    ctx.fillText('…', x + e.w / 2 - 3, y - 4);
+  }
+}
+
+function drawNpc(n) {
+  const t = game.time;
+  const x = n.x, y = n.y;
+  const bob = Math.sin(t * 1.6 + x) * 0.6;
+  shadowEllipse(x + 10, y + 26, 20);
+  ctx.save();
+  ctx.translate(x + 10, y + bob);
+  ctx.scale(n.dir >= 0 ? 1 : -1, 1);
+  if (n.kind === 'zina') {
+    /* табурет */
+    ctx.fillStyle = '#4a382c'; ctx.fillRect(-8, 18, 16, 3);
+    ctx.fillRect(-7, 21, 2, 6); ctx.fillRect(5, 21, 2, 6);
+    /* платье */
+    ctx.fillStyle = '#4a3a56';
+    ctx.beginPath(); ctx.moveTo(-7, 8); ctx.lineTo(7, 8); ctx.lineTo(11, 19); ctx.lineTo(-11, 19); ctx.closePath(); ctx.fill();
+    /* голова */
+    ctx.fillStyle = '#e8c4a6'; ctx.beginPath(); ctx.arc(0, 4, 4.6, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#8a455c'; ctx.beginPath(); ctx.arc(0, 4, 5, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = '#1a1420'; ctx.fillRect(-2.4, 4, 1.2, 1.2); ctx.fillRect(1.4, 4, 1.2, 1.2);
+  } else if (n.kind === 'tolya') {
+    ctx.fillStyle = '#3a4a3a'; rr(ctx, -6, 8, 12, 16, 2); ctx.fill();
+    ctx.fillStyle = '#2a3a2a'; ctx.fillRect(-5, 22, 4, 4); ctx.fillRect(1, 22, 4, 4);
+    ctx.fillStyle = '#e0b48a'; ctx.beginPath(); ctx.arc(0, 4, 4.4, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#6a4a3a'; ctx.fillRect(-4.4, 0, 8.8, 2.6);
+    ctx.fillStyle = 'rgba(90,160,120,.8)'; ctx.fillRect(5, 12, 3, 7);
+  } else {
+    ctx.fillStyle = '#3a6a8a'; rr(ctx, -5, 10, 10, 12, 2); ctx.fill();
+    ctx.fillStyle = '#2a4a5a'; ctx.fillRect(-4, 20, 3, 5); ctx.fillRect(1, 20, 3, 5);
+    ctx.fillStyle = '#e8b48a'; ctx.beginPath(); ctx.arc(0, 6, 4.2, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#2a2a3a'; ctx.fillRect(-4.6, 2.4, 9.2, 2.4);
+    ctx.strokeStyle = '#d8d0b0'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(-4.6, 6, 2.2, -1.2, 1.2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(4.6, 6, 2.2, Math.PI - 1.2, Math.PI + 1.2); ctx.stroke();
+    if (game.time % 3 < 1.5) { ctx.fillStyle = '#b8ff4d'; ctx.fillRect(3, 10, 1.6, 1.6); }
+  }
+  ctx.restore();
+}
+
+function itemBob(it) { return Math.sin(game.time * 2.4 + it.bob) * 2; }
+
+function drawItem(it) {
+  const x = it.x, y = it.y + itemBob(it);
+  if (it.type === 'seed') {
+    glowDot(ctx, x + 4, y + 4, 9, '#ffcf6b', 0.5);
+    ctx.fillStyle = '#e8d8a8';
+    ctx.beginPath(); ctx.ellipse(x + 4, y + 4, 2.6, 1.8, 0.5, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#3a3020';
+    ctx.fillRect(x + 3, y + 3.4, 1.6, 0.9);
+  } else if (it.type === 'battery') {
+    glowDot(ctx, x + 4, y + 5, 11, '#b8ff4d', 0.55);
+    ctx.fillStyle = '#2a3a2a'; rr(ctx, x, y, 8, 11, 1.5); ctx.fill();
+    ctx.fillStyle = '#b8ff4d'; ctx.fillRect(x + 1.5, y + 2, 5, 6);
+    ctx.fillStyle = '#f0ffe0'; ctx.fillRect(x + 2.5, y - 1.5, 3, 2);
+  } else if (it.type === 'tea') {
+    glowDot(ctx, x + 4, y + 4, 11, '#52e0c0', 0.55);
+    ctx.fillStyle = '#e8e0d0'; rr(ctx, x, y + 2, 9, 7, 1.5); ctx.fill();
+    ctx.strokeStyle = '#e8e0d0'; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.arc(x + 9.5, y + 5, 2.4, -1, 1); ctx.stroke();
+    ctx.fillStyle = 'rgba(140,90,40,.6)'; ctx.fillRect(x + 1.4, y + 3, 6.2, 1.6);
+  } else if (it.type === 'fuse') {
+    const pulse = 0.6 + Math.sin(game.time * 4 + it.bob) * 0.4;
+    glowDot(ctx, x + 5, y + 7, 22 + pulse * 8, '#ffcf6b', 0.85);
+    ctx.fillStyle = '#e8dcc0'; rr(ctx, x + 2, y, 6, 14, 2); ctx.fill();
+    ctx.fillStyle = '#c94a4a'; ctx.fillRect(x + 2.6, y + 2, 4.8, 2);
+    ctx.fillStyle = '#c9a24a'; ctx.fillRect(x + 2, y + 11.5, 6, 2.5);
+    ctx.strokeStyle = 'rgba(255,207,107,.55)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(x + 5, y + 7, 10 + pulse * 4, 0, TAU); ctx.stroke();
+  } else if (it.type === 'artifact') {
+    const spin = game.time * 1.6 + it.bob;
+    glowDot(ctx, x + 5, y + 6, 16, '#8a63ff', 0.7);
+    ctx.save();
+    ctx.translate(x + 5, y + 6);
+    ctx.rotate(spin);
+    ctx.fillStyle = '#c9b6ff';
+    ctx.beginPath(); ctx.moveTo(0, -6); ctx.lineTo(4.5, 0); ctx.lineTo(0, 6); ctx.lineTo(-4.5, 0); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+}
+
+/* ── Лифт и щиток ─────────────────────────────────────────────────────── */
+function drawElevator() {
+  const el = world.elevator;
+  const sw = world.shaft.w;
+  /* противовес */
+  ctx.fillStyle = 'rgba(150,160,180,.35)';
+  ctx.fillRect(world.shaft.x + sw - 10, world.roofY || 0, 4, 40);
+
+  /* кабина */
+  ctx.fillStyle = '#2a2f3a';
+  rr(ctx, el.x, el.y, el.w, el.h, 2); ctx.fill();
+  ctx.fillStyle = '#3a4452';
+  rr(ctx, el.x + 2, el.y + 2, el.w - 4, el.h - 6, 1); ctx.fill();
+  /* свет внутри */
+  if (el.powered) {
+    const g = ctx.createLinearGradient(0, el.y, 0, el.y + el.h);
+    g.addColorStop(0, 'rgba(255,225,160,.55)');
+    g.addColorStop(1, 'rgba(255,225,160,.08)');
+    ctx.fillStyle = g;
+    ctx.fillRect(el.x + 3, el.y + 3, el.w - 6, el.h - 8);
+  }
+  /* створки */
+  ctx.fillStyle = '#59636e';
+  ctx.fillRect(el.x + 3, el.y + 4, el.w - 6, el.h - 10);
+  ctx.strokeStyle = 'rgba(0,0,0,.4)'; ctx.lineWidth = 1;
+  for (let i = 1; i < 4; i++) {
+    ctx.beginPath();
+    ctx.moveTo(el.x + 3, el.y + 4 + i * (el.h - 10) / 4);
+    ctx.lineTo(el.x + el.w - 3, el.y + 4 + i * (el.h - 10) / 4);
+    ctx.stroke();
+  }
+  /* трос */
+  ctx.strokeStyle = 'rgba(180,190,200,.35)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(el.x + el.w / 2, 0); ctx.lineTo(el.x + el.w / 2, el.y); ctx.stroke();
+  /* индикатор этажа */
+  if (el.powered) {
+    ctx.fillStyle = 'rgba(8,10,16,.85)';
+    ctx.fillRect(el.x + el.w / 2 - 7, el.y - 9, 14, 7);
+    ctx.fillStyle = '#ffb43d';
+    ctx.font = '700 6px ' + MONO_FONT;
+    ctx.textAlign = 'center';
+    ctx.fillText(String(el.floor), el.x + el.w / 2, el.y - 3.5);
+    ctx.textAlign = 'left';
+  }
+}
+
+function drawGates() {
+  const el = world.elevator;
+  const gateH = CONFIG.building.elevator.gateH;
+  for (const g of world.gates) {
+    const open = el.powered && el.state === 'idle' && g.floor === el.floor;
+    const fl = world.floors[g.floor];
+    const wy = fl ? fl.walk : g.y + g.h;
+    const t = open ? 1 : 0;
+    if (t > 0.02) {
+      /* створки разъехались вверх-вниз */
+      ctx.fillStyle = '#4a5560';
+      ctx.fillRect(g.x, g.y - (g.h / 2) * t, g.w, g.h / 2 * (1 - t) + 1);
+      ctx.fillRect(g.x, g.y + g.h / 2 + (g.h / 2) * t, g.w, g.h / 2 * (1 - t) + 1);
+    } else {
+      ctx.fillStyle = '#3f4854';
+      ctx.fillRect(g.x, g.y, g.w, g.h);
+      ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 0.8;
+      for (let i = 1; i < 5; i++) {
+        ctx.beginPath(); ctx.moveTo(g.x, g.y + i * g.h / 5); ctx.lineTo(g.x + g.w, g.y + i * g.h / 5); ctx.stroke();
+      }
+    }
+    /* рамка проёма */
+    ctx.strokeStyle = 'rgba(180,190,200,.22)'; ctx.lineWidth = 1;
+    ctx.strokeRect(g.x - 1, wy - gateH - 1, g.w + 2, gateH + 2);
+  }
+}
+
+function drawSwitchboard() {
+  const sb = world.switchboard;
+  if (!sb) return;
+  ctx.fillStyle = '#5a6068';
+  rr(ctx, sb.x, sb.y, sb.w, sb.h, 2); ctx.fill();
+  ctx.fillStyle = '#7a828a';
+  rr(ctx, sb.x + 2, sb.y + 2, sb.w - 4, sb.h - 4, 2); ctx.fill();
+  /* три гнезда пробок */
+  for (let i = 0; i < 3; i++) {
+    const fx = sb.x + 8 + i * 12;
+    const filled = i < world.fusesInserted;
+    ctx.fillStyle = filled ? '#ffe9a8' : '#2a2e34';
+    ctx.fillRect(fx, sb.y + 10, 7, 12);
+    ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 0.8;
+    ctx.strokeRect(fx, sb.y + 10, 7, 12);
+    if (filled) glowDot(ctx, fx + 3.5, sb.y + 16, 12, '#ffcf6b', 0.8);
+  }
+  /* рубильник */
+  ctx.fillStyle = world.powerStage >= 3 ? '#b8ff4d' : '#8a3a3a';
+  ctx.fillRect(sb.x + sb.w / 2 - 3, sb.y + 30, 6, 8);
+  /* провода */
+  ctx.strokeStyle = 'rgba(40,40,50,.8)'; ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.moveTo(sb.x + 4, sb.y); ctx.lineTo(sb.x + 4, sb.y - 14); ctx.lineTo(sb.x + 30, sb.y - 20); ctx.stroke();
+  /* надпись */
+  ctx.fillStyle = 'rgba(230,225,200,.55)';
+  ctx.font = '5px ' + MONO_FONT;
+  ctx.fillText('ЩИТ', sb.x + 14, sb.y + 47);
+  if (world.powerStage < 3) {
+    const pulse = 0.4 + Math.sin(game.time * 3) * 0.3;
+    glowDot(ctx, sb.x + sb.w / 2, sb.y + 6, 9 * pulse + 5, '#b8ff4d', 0.6);
+  }
+}
+
+/* ── Пузыри, всплывающий текст, частицы ──────────────────────────────── */
+function drawBubbles() {
+  ctx.textAlign = 'center';
+  for (const b of game.bubbles) {
+    const a = clamp01(Math.min(b.t * 4, (b.dur - b.t) * 2));
+    ctx.font = '600 8px ' + MONO_FONT;
+    const w = ctx.measureText(b.text).width + 10;
+    const x = b.x - w / 2, y = b.y - 16 - Math.min(6, b.t * 6);
+    ctx.globalAlpha = a;
+    ctx.fillStyle = 'rgba(10,8,20,.9)';
+    rr(ctx, x, y - 10, w, 14, 3); ctx.fill();
+    ctx.strokeStyle = withAlpha(b.color, 0.5); ctx.lineWidth = 0.8; ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(b.x - 3, y + 4); ctx.lineTo(b.x, y + 8); ctx.lineTo(b.x + 3, y + 4);
+    ctx.fillStyle = 'rgba(10,8,20,.9)'; ctx.fill();
+    ctx.fillStyle = b.color;
+    ctx.fillText(b.text, b.x, y);
+    ctx.globalAlpha = 1;
+  }
+  ctx.textAlign = 'left';
+}
+
+function drawFloats() {
+  ctx.textAlign = 'center';
+  for (const f of game.floats) {
+    const k = f.t / f.dur;
+    ctx.globalAlpha = clamp01(1 - k * k);
+    ctx.font = '700 ' + f.size + 'px ' + MONO_FONT;
+    ctx.fillStyle = 'rgba(0,0,0,.6)';
+    ctx.fillText(f.text, f.x + 0.7, f.y - k * 18 + 0.7);
+    ctx.fillStyle = f.color;
+    ctx.fillText(f.text, f.x, f.y - k * 18);
+    ctx.globalAlpha = 1;
+  }
+  ctx.textAlign = 'left';
+}
+
+function drawParticles() {
+  for (const p of game.particles) {
+    const a = clamp01(p.life / p.max);
+    ctx.globalAlpha = a;
+    ctx.fillStyle = p.color;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (0.4 + 0.6 * a), 0, TAU); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function updateParticles(dt) {
+  for (let i = game.particles.length - 1; i >= 0; i--) {
+    const p = game.particles[i];
+    p.life -= dt;
+    if (p.life <= 0) { game.particles.splice(i, 1); continue; }
+    p.x += p.vx * dt; p.y += p.vy * dt;
+    p.vy += (p.g || 0) * dt;
+    p.vx *= 0.98;
+  }
+  for (let i = game.floats.length - 1; i >= 0; i--) {
+    game.floats[i].t += dt;
+    if (game.floats[i].t >= game.floats[i].dur) game.floats.splice(i, 1);
+  }
+}
+
+/* ───────────────────────────── G5. СБОРКА КАДРА ──────────────────────────── */
+const stars = Array.from({ length: 90 }, (_, i) => ({
+  x: (i * 733) % 1000 / 1000, y: (i * 317) % 1000 / 1000, r: 0.5 + ((i * 31) % 100) / 130, ph: i * 0.7,
+}));
+
+function drawSky() {
+  const c = ctx, w = view.w, h = view.h;
+  const g = c.createLinearGradient(0, 0, 0, h);
+  g.addColorStop(0, '#070613');
+  g.addColorStop(0.45, '#0c0a1e');
+  g.addColorStop(0.75, '#151027');
+  g.addColorStop(1, '#1b1226');
+  c.fillStyle = g;
+  c.fillRect(0, 0, w, h);
+  /* звёзды с лёгким параллаксом */
+  const cam = game.cam;
+  const ox = -cam.x * 0.03, oy = -cam.y * 0.03;
+  for (const s of stars) {
+    const sx = ((s.x * w) + ox) % w;
+    const sy = (s.y * h * 0.55 + oy) % (h * 0.6);
+    const a = 0.25 + 0.55 * (0.5 + 0.5 * Math.sin(game.time * 1.6 + s.ph));
+    c.globalAlpha = a;
+    c.fillStyle = '#cfe4ff';
+    c.fillRect((sx + w) % w, (sy + h) % (h * 0.6), s.r, s.r);
+  }
+  c.globalAlpha = 1;
+  /* луна */
+  const mx = w * 0.8 - cam.x * 0.02, my = h * 0.16 - cam.y * 0.02;
+  const mg = c.createRadialGradient(mx, my, 2, mx, my, 70);
+  mg.addColorStop(0, 'rgba(255,245,215,.5)');
+  mg.addColorStop(0.25, 'rgba(255,240,200,.12)');
+  mg.addColorStop(1, 'rgba(255,240,200,0)');
+  c.fillStyle = mg;
+  c.beginPath(); c.arc(mx, my, 70, 0, TAU); c.fill();
+  c.fillStyle = '#f5efd2';
+  c.beginPath(); c.arc(mx, my, 16, 0, TAU); c.fill();
+  c.fillStyle = 'rgba(200,190,160,.35)';
+  c.beginPath(); c.arc(mx - 5, my - 4, 3.4, 0, TAU); c.fill();
+  c.beginPath(); c.arc(mx + 5, my + 3, 2.4, 0, TAU); c.fill();
+}
+
+function drawParallax() {
+  const cam = game.cam;
+  const k = CONFIG.world.parallax;
+  const yDrift = (cam.y * 0.06) % 400;
+
+  /* дальний город: привязан к низу экрана, чтобы «улица» была видна с любого этажа */
+  const skW = 2600, skH = 300;
+  const off1 = -(((cam.x * 0.10 * k) % skW) + skW);
+  for (let i = 0; i < 3; i++) {
+    ctx.drawImage(bg.skyline, off1 + i * skW, view.h - skH - 96 + yDrift * 0.4);
+  }
+  /* улица с ларьками и фонарями */
+  const stW = 2600, stH = 230;
+  const off2 = -(((cam.x * 0.26 * k) % stW) + stW);
+  for (let i = 0; i < 3; i++) {
+    ctx.drawImage(bg.street, off2 + i * stW, view.h - stH + yDrift);
+  }
+  /* тёмная дымка между городом и улицей */
+  const haze = ctx.createLinearGradient(0, view.h - stH - 120, 0, view.h);
+  haze.addColorStop(0, 'rgba(8,6,16,0)');
+  haze.addColorStop(0.55, 'rgba(10,8,20,.22)');
+  haze.addColorStop(1, 'rgba(6,5,12,.5)');
+  ctx.fillStyle = haze;
+  ctx.fillRect(0, view.h - stH - 120, view.w, stH + 120);
+}
+
+function drawRoof() {
+  const y = 0;
+  ctx.fillStyle = '#22202c';
+  ctx.fillRect(-6, y - 12, BW() + 12, 12);
+  ctx.fillStyle = '#2c2a38';
+  ctx.fillRect(-6, y - 14, BW() + 12, 3);
+  /* парапет с зубцами */
+  for (let x = 10; x < BW() - 10; x += 46) {
+    ctx.fillStyle = '#191721';
+    ctx.fillRect(x, y - 22, 22, 9);
+  }
+  /* антенны и бельевые верёвки */
+  ctx.strokeStyle = '#3a3748'; ctx.lineWidth = 2;
+  const ant = [230, 690, 1180, 1440];
+  ant.forEach((x, i) => {
+    ctx.beginPath(); ctx.moveTo(x, y - 12); ctx.lineTo(x, y - 44 - i * 6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x - 7, y - 38 - i * 6); ctx.lineTo(x + 7, y - 38 - i * 6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x - 4, y - 32 - i * 6); ctx.lineTo(x + 4, y - 32 - i * 6); ctx.stroke();
+  });
+  /* бельё */
+  ctx.strokeStyle = 'rgba(200,200,210,.2)'; ctx.lineWidth = 0.8;
+  ctx.beginPath(); ctx.moveTo(300, y - 34); ctx.quadraticCurveTo(430, y - 22, 560, y - 34); ctx.stroke();
+  ctx.fillStyle = 'rgba(220,210,190,.35)';
+  ctx.fillRect(360, y - 32, 9, 12);
+  ctx.fillStyle = 'rgba(180,120,140,.35)';
+  ctx.fillRect(440, y - 30, 12, 15);
+  /* кот на парапете */
+  const cat = 1000 + Math.sin(game.time * 0.3) * 2;
+  ctx.fillStyle = '#0f0d16';
+  ctx.beginPath(); ctx.ellipse(cat, y - 16, 6, 4, 0, 0, TAU); ctx.fill();
+  ctx.beginPath(); ctx.arc(cat + 5, y - 20, 3, 0, TAU); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(cat + 4, y - 23); ctx.lineTo(cat + 6, y - 26); ctx.lineTo(cat + 7, y - 23); ctx.fill();
+  if (Math.sin(game.time * 0.7) > 0.94) {
+    ctx.fillStyle = 'rgba(184,255,77,.7)';
+    ctx.fillRect(cat + 4, y - 21, 1.4, 1.4);
+    ctx.fillRect(cat + 7, y - 21, 1.4, 1.4);
+  }
+}
+
+function drawCourtyard() {
+  const gy = world.height;
+  const w = BW() + 900;
+  /* асфальт */
+  ctx.fillStyle = '#151319';
+  ctx.fillRect(-450, gy, w, 90);
+  ctx.fillStyle = 'rgba(255,255,255,.035)';
+  for (let x = -450; x < -450 + w; x += 60) ctx.fillRect(x, gy, 40, 1);
+  /* бордюр */
+  ctx.fillStyle = '#22202a';
+  ctx.fillRect(-450, gy, w, 3);
+  /* лавочка */
+  const bench = (x) => {
+    ctx.fillStyle = '#4a3a2c'; ctx.fillRect(x, gy + 26, 52, 4);
+    ctx.fillRect(x, gy + 16, 52, 3);
+    ctx.fillStyle = '#2a2420'; ctx.fillRect(x + 4, gy + 30, 4, 12); ctx.fillRect(x + 44, gy + 30, 4, 12);
+  };
+  bench(-120); bench(BW() + 60);
+  /* жигули */
+  const carX = BW() + 190;
+  ctx.fillStyle = '#7a3a3a';
+  rr(ctx, carX, gy + 30, 96, 26, 6); ctx.fill();
+  ctx.fillStyle = '#8a4a4a';
+  rr(ctx, carX + 16, gy + 16, 56, 18, 6); ctx.fill();
+  ctx.fillStyle = 'rgba(160,200,230,.35)';
+  rr(ctx, carX + 20, gy + 19, 22, 12, 3); ctx.fill();
+  rr(ctx, carX + 46, gy + 19, 22, 12, 3); ctx.fill();
+  ctx.fillStyle = '#101014';
+  ctx.beginPath(); ctx.arc(carX + 22, gy + 56, 8, 0, TAU); ctx.fill();
+  ctx.beginPath(); ctx.arc(carX + 74, gy + 56, 8, 0, TAU); ctx.fill();
+  ctx.fillStyle = '#3a3a44';
+  ctx.beginPath(); ctx.arc(carX + 22, gy + 56, 3.4, 0, TAU); ctx.fill();
+  ctx.beginPath(); ctx.arc(carX + 74, gy + 56, 3.4, 0, TAU); ctx.fill();
+  /* мусорный контейнер */
+  const bx = -260;
+  ctx.fillStyle = '#3a4438';
+  rr(ctx, bx, gy + 20, 56, 30, 3); ctx.fill();
+  ctx.fillStyle = '#2a3228';
+  ctx.fillRect(bx + 2, gy + 16, 52, 5);
+  /* дерево */
+  ctx.fillStyle = '#2a2420';
+  ctx.fillRect(BW() + 320, gy - 30, 6, 90);
+  ctx.fillStyle = '#16211a';
+  ctx.beginPath(); ctx.arc(BW() + 323, gy - 40, 34, 0, TAU); ctx.fill();
+  ctx.beginPath(); ctx.arc(BW() + 300, gy - 26, 22, 0, TAU); ctx.fill();
+  /* парадная: дверь в подвал */
+  ctx.fillStyle = '#1a1a22';
+  ctx.fillRect(BW() - SW() - 8, gy - 4, 46, 4);
+}
+
+function drawBuilding() {
+  const cam = game.cam;
+  const z = cam.zoom;
+  const vx0 = cam.x, vx1 = cam.x + view.w / z;
+  const vy0 = cam.y, vy1 = cam.y + view.h / z;
+
+  /* тень дома на фоне */
+  ctx.fillStyle = 'rgba(0,0,0,.4)';
+  ctx.fillRect(-14, -6, BW() + 28, world.height + 12);
+
+  for (let k = 0; k < world.floors.length; k++) {
+    const fl = world.floors[k];
+    if (fl.top + FH() < vy0 || fl.top > vy1) continue;
+    const cv = floorCanvases[k];
+    if (cv) ctx.drawImage(cv, 0, fl.top, BW(), FH());
+    else { ctx.fillStyle = '#111018'; ctx.fillRect(0, fl.top, BW(), FH()); }
+  }
+
+  /* контровой свет по краю дома (от улицы) */
+  const rimL = ctx.createLinearGradient(0, 0, 26, 0);
+  rimL.addColorStop(0, 'rgba(120,170,255,.22)');
+  rimL.addColorStop(1, 'rgba(120,170,255,0)');
+  ctx.fillStyle = rimL;
+  ctx.fillRect(0, 0, 26, world.height);
+  const rimR = ctx.createLinearGradient(BW() - 26, 0, BW(), 0);
+  rimR.addColorStop(0, 'rgba(255,150,190,0)');
+  rimR.addColorStop(1, 'rgba(255,150,190,.18)');
+  ctx.fillStyle = rimR;
+  ctx.fillRect(BW() - 26, 0, 26, world.height);
+
+  /* внешние стены */
+  ctx.fillStyle = '#1b1824';
+  ctx.fillRect(-12, -12, 12, world.height + 12);
+  ctx.fillRect(BW(), -12, 12, world.height + 12);
+  ctx.fillStyle = 'rgba(255,255,255,.04)';
+  ctx.fillRect(-12, -12, 1.4, world.height + 12);
+  ctx.fillRect(BW() + 10.6, -12, 1.4, world.height + 12);
+  /* вертикальные стыки панелей */
+  ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 1;
+  for (let k = 0; k <= world.floors.length; k++) {
+    const y = k * FH();
+    ctx.beginPath(); ctx.moveTo(-12, y); ctx.lineTo(0, y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(BW(), y); ctx.lineTo(BW() + 12, y); ctx.stroke();
+  }
+
+  drawGates();
+  drawElevator();
+  drawSwitchboard();
+
+  /* окна, которые светятся после включения */
+  if (world.powerStage >= 3) {
+    for (const w of world.windows) {
+      const g = ctx.createRadialGradient(w.x + w.w / 2, w.y + w.h / 2, 2, w.x + w.w / 2, w.y + w.h / 2, w.w);
+      g.addColorStop(0, 'rgba(255,220,150,.5)');
+      g.addColorStop(1, 'rgba(255,220,150,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(w.x - w.w, w.y - w.h, w.w * 3, w.h * 3);
+    }
+  }
+  /* кондиционеры и трубы на внешних стенах */
+  for (let k = 1; k < world.floors.length; k += 2) {
+    const y = walkY(k) - 26;
+    ctx.fillStyle = '#3a3a44';
+    ctx.fillRect(BW() + 1, y, 10, 8);
+    ctx.fillStyle = 'rgba(0,0,0,.4)';
+    ctx.fillRect(BW() + 1, y + 6, 10, 2);
+    if (k % 4 === 1) { ctx.fillStyle = '#33333c'; ctx.fillRect(-12, y - 12, 9, 20); }
+  }
+  ctx.strokeStyle = 'rgba(160,160,170,.18)';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(-10, world.height); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(BW() + 10, 0); ctx.lineTo(BW() + 10, world.height); ctx.stroke();
+
+  drawRoof();
+  drawCourtyard();
+}
+
+function drawEntities() {
+  const cam = game.cam;
+  const vx0 = cam.x - 80, vx1 = cam.x + view.w / cam.zoom + 80;
+  const vy0 = cam.y - 80, vy1 = cam.y + view.h / cam.zoom + 80;
+
+  for (const it of world.items) {
+    if (it.taken) continue;
+    if (it.x < vx0 || it.x > vx1 || it.y < vy0 || it.y > vy1) continue;
+    drawItem(it);
+  }
+  for (const e of world.enemies) {
+    if (e.x < vx0 || e.x > vx1 || e.y < vy0 || e.y > vy1) continue;
+    if (e.kind === 'granny') drawGranny(e);
+    else if (e.kind === 'dog') drawDog(e);
+    else drawBabay(e);
+  }
+  for (const n of world.npcs) {
+    if (n.x < vx0 || n.x > vx1 || n.y < vy0 || n.y > vy1) continue;
+    drawNpc(n);
+  }
+  if (game.player) drawPlayer(game.player);
+  drawParticles();
+}
+
+function drawRain() {
+  if (!CONFIG.world.rain) return;
+  const c = ctx, w = view.w, h = view.h;
+  const t = game.time;
+  c.save();
+  c.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+  c.strokeStyle = 'rgba(170,200,255,.14)';
+  c.lineWidth = 1;
+  for (let i = 0; i < 70; i++) {
+    const seed = i * 97.13;
+    const x = (seed * 13 + t * 60) % (w + 100) - 50;
+    const y = (seed * 31 + t * 620) % (h + 100) - 50;
+    c.beginPath();
+    c.moveTo(x, y);
+    c.lineTo(x - 5, y + 16);
+    c.stroke();
+  }
+  c.restore();
+}
+
+function render(dt) {
+  const cam = game.cam;
+  const shake = cam.shake;
+  const sx = shake > 0.2 ? (Math.random() * 2 - 1) * shake : 0;
+  const sy = shake > 0.2 ? (Math.random() * 2 - 1) * shake : 0;
+
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.fillStyle = '#05040a';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+  drawSky();
+
+  drawParallax();
+  drawRain();
+
+  ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+  ctx.translate(sx, sy);
+  ctx.scale(cam.zoom, cam.zoom);
+  ctx.translate(-cam.x, -cam.y);
+  drawBuilding();
+  drawEntities();
+
+  drawLighting();
+
+  ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+  ctx.translate(sx, sy);
+  ctx.scale(cam.zoom, cam.zoom);
+  ctx.translate(-cam.x, -cam.y);
+  drawBubbles();
+  drawFloats();
+
+  drawGlows(dt);
+
+  /* вспышка при включении света и при смерти */
+  if (game.flash > 0.01) {
+    ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+    ctx.fillStyle = `rgba(255,240,200,${clamp01(game.flash)})`;
+    ctx.fillRect(0, 0, view.w, view.h);
+  }
+  if (game.fade > 0.01) {
+    ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+    ctx.fillStyle = `rgba(4,3,8,${clamp01(game.fade)})`;
+    ctx.fillRect(0, 0, view.w, view.h);
+  }
+}
+
+/* ───────────────────────────── H. ЦИКЛ ───────────────────────────────────── */
+function updateCamera(dt, instant) {
+  const cam = game.cam;
+  const p = game.player;
+  let tz;
+  let tx, ty;
+  if (game.mode === 'ending' || game.mode === 'end') {
+    const fit = Math.min(view.w / (BW() + 300), view.h / (world.height + 260));
+    tz = clamp(fit, 0.12, 1.2);
+    tx = BW() / 2 - view.w / (2 * tz);
+    ty = world.height / 2 - view.h / (2 * tz);
+  } else if (game.mode === 'menu') {
+    tz = clamp(view.h / 760, 0.62, 1.05) * 0.92;
+    tx = BW() / 2 - view.w / (2 * tz) + Math.sin(game.time * 0.08) * 120;
+    ty = world.height * 0.42 - view.h / (2 * tz) + Math.sin(game.time * 0.11) * 40;
+  } else {
+    tz = clamp(Math.min(view.h / 460, view.w / 330), 1.0, 2.3);
+    if (p.riding) tz = Math.min(tz, 1.55);
+    const look = CONFIG.camera.lookAhead * (p.dir || 1);
+    tx = p.x + p.w / 2 + look - view.w / (2 * tz);
+    ty = p.y + p.h / 2 - view.h / (2 * tz) - 10;
+    const over = Math.min(CONFIG.camera.overscroll, view.w * 0.22);
+    const maxX = Math.max(-over, BW() - view.w / tz + over);
+    tx = clamp(tx, -over, Math.max(-over, maxX));
+    const maxY = Math.max(-70, world.height - view.h / tz + 30);
+    ty = clamp(ty, -70, maxY);
+  }
+  if (instant) {
+    cam.x = tx; cam.y = ty; cam.zoom = tz;
+    return;
+  }
+  const k = 1 - Math.exp(-CONFIG.camera.smooth * dt);
+  cam.x = lerp(cam.x, tx, k);
+  cam.y = lerp(cam.y, ty, k);
+  cam.zoom = lerp(cam.zoom, tz, 1 - Math.exp(-3.2 * dt));
+  cam.shake = Math.max(0, cam.shake - dt * 26);
+}
+
+function update(dt) {
+  game.time += dt;
+  game.playTime += dt;
+  game.flash = Math.max(0, (game.flash || 0) - dt * 2.2);
+  game.fade = Math.max(0, (game.fade || 0) - dt * 2.4);
+
+  if (game.torch.on) {
+    game.torch.battery = Math.max(0, game.torch.battery - CONFIG.player.torchDrain * dt);
+    if (game.torch.battery <= 0) {
+      game.torch.on = false;
+      toast('Фонарь сел. Ищи батарейки.', 'bad');
+      SND.tone({ freq: 300, freqEnd: 90, dur: 0.4, gain: 0.09, type: 'sawtooth' });
+    }
+  }
+  updateElevator(dt);
+  updatePlayer(dt);
+  updateItems();
+  updateEnemies(dt);
+  updateParticles(dt);
+  updatePrompt();
+  updateCamera(dt);
+  updateHud();
+}
+
+function updateEnding(dt) {
+  game.endingT += dt;
+  game.time += dt;
+  game.flash = Math.max(0, (game.flash || 0) - dt * 1.4);
+  updateCamera(dt);
+  updateParticles(dt);
+  if (game.endingT > 5.2 && game.mode === 'ending') showEnd();
+}
+
+function startEnding() {
+  game.mode = 'ending';
+  game.endingT = 0;
+  game.flash = 1;
+  game.cam.shake = 14;
+  for (const l of world.lights) l.on = true;
+  for (const w of world.windows) {
+    burst(w.x + w.w / 2, w.y + w.h / 2, 4, '#ffe0a0', 40);
+  }
+  toast('СВЕТ ЕСТЬ. Дом ожил.', 'good');
+  announce('Свет есть. Дом ожил. Девять этажей, все окна.');
+  SND.power();
+}
+
+function announce(text) {
+  const el = $('#live');
+  if (el) el.textContent = text;
+}
+
+let lastT = 0;
+let fpsAcc = 0, fpsN = 0, fpsValue = 0;
+function loop(t) {
+  requestAnimationFrame(loop);
+  const dt = Math.min(0.036, Math.max(0, (t - lastT) / 1000));
+  lastT = t;
+  if (game.mode === 'play') update(dt);
+  else if (game.mode === 'ending') updateEnding(dt);
+  else if (game.mode === 'menu') { game.time += dt; updateCamera(dt); updateParticles(dt); }
+  render(dt);
+  fpsAcc += dt; fpsN++;
+  if (fpsAcc >= 1) { fpsValue = Math.round(fpsN / fpsAcc); fpsAcc = 0; fpsN = 0; }
+}
+
+/* ───────────────────────────── H2. HUD / UI ──────────────────────────────── */
+const el = {
+  floorText: $('#floorText'), placeName: $('#placeName'), hearts: $('#hearts'),
+  batteryFill: $('#batteryFill'), batteryPct: $('#batteryPct'), batteryWrap: $('#batteryWrap'),
+  fusePips: $('#fusePips'), prompt: $('#prompt'), toasts: $('#toasts'),
+  btnSound: $('#btnSound'), btnTorch: $('#btnTorch'), btnSet: $('#btnSet'), btnPause: $('#btnPause'),
+  ovStart: $('#ovStart'), ovPause: $('#ovPause'), ovSet: $('#ovSet'), ovEnd: $('#ovEnd'),
+};
+
+function buildHearts() {
+  el.hearts.textContent = '';
+  for (let i = 0; i < CONFIG.player.nerves; i++) {
+    const d = document.createElement('div');
+    d.className = 'heart on';
+    el.hearts.appendChild(d);
+  }
+}
+function buildFusePips() {
+  el.fusePips.textContent = '';
+  for (let i = 0; i < world.fusesTotal; i++) {
+    const d = document.createElement('div');
+    d.className = 'fuse-pip';
+    el.fusePips.appendChild(d);
+  }
+}
+
+let hudCache = {};
+function updateHud(force) {
+  const p = game.player;
+  if (!p) return;
+  const fl = floorAtY(p.y + p.h - 2);
+  const k = fl ? fl.k : 0;
+  const floorLabel = k === 0 ? 'подвал' : 'этаж ' + k;
+  if (force || hudCache.floor !== floorLabel) {
+    hudCache.floor = floorLabel;
+    if (el.floorText) el.floorText.textContent = floorLabel;
+  }
+  if (el.placeName) {
+    const place = placeNameAt(p.x + p.w / 2, p.y + p.h - 2);
+    if (hudCache.place !== place) { hudCache.place = place; el.placeName.textContent = place; }
+  }
+  /* нервы */
+  const hearts = el.hearts ? Array.from(el.hearts.children) : [];
+  if (force || hudCache.nerves !== game.nerves) {
+    hudCache.nerves = game.nerves;
+    hearts.forEach((h, i) => h.classList.toggle('on', i < game.nerves));
+  }
+  /* батарея */
+  const bat = Math.round(game.torch.battery);
+  if (force || hudCache.bat !== bat) {
+    hudCache.bat = bat;
+    if (el.batteryFill) el.batteryFill.style.width = bat + '%';
+    if (el.batteryPct) el.batteryPct.textContent = bat + '%';
+    if (el.batteryWrap) el.batteryWrap.classList.toggle('low', bat < 22);
+  }
+  /* пробки */
+  if (force || hudCache.fuses !== game.fuses || hudCache.inserted !== world.fusesInserted) {
+    hudCache.fuses = game.fuses; hudCache.inserted = world.fusesInserted;
+    const pips = el.fusePips ? Array.from(el.fusePips.children) : [];
+    pips.forEach((pip, i) => pip.classList.toggle('on', i < world.fusesInserted));
+  }
+  if (el.btnTorch) el.btnTorch.setAttribute('aria-pressed', String(game.torch.on));
+}
+
+function updatePrompt() {
+  const a = findInteraction();
+  game.prompt = a;
+  const box = el.prompt;
+  if (!box) return;
+  if (!a) { if (!box.hidden) box.hidden = true; return; }
+  const text = a.label;
+  if (hudCache.prompt !== text) {
+    hudCache.prompt = text;
+    box.textContent = '';
+    if (a.key) {
+      const k = document.createElement('kbd');
+      k.textContent = a.key;
+      box.appendChild(k);
+    }
+    box.appendChild(document.createTextNode(text));
+  }
+  box.hidden = false;
+}
+
+function toast(text, kind) {
+  if (!el.toasts) return;
+  const d = document.createElement('div');
+  d.className = 'toast' + (kind ? ' ' + kind : '');
+  d.textContent = text;
+  el.toasts.appendChild(d);
+  while (el.toasts.children.length > 3) el.toasts.removeChild(el.toasts.firstChild);
+  setTimeout(() => {
+    d.classList.add('out');
+    setTimeout(() => d.remove(), 380);
+  }, 2600);
+}
+
+/* ───────────────────────────── H3. ВЗАИМОДЕЙСТВИЯ ────────────────────────── */
+function playerFloor() {
+  const p = game.player;
+  return floorAtY(p.y + p.h - 2).k;
+}
+
+function findInteraction() {
+  const p = game.player;
+  if (!p) return null;
+  const el2 = world.elevator;
+  const myK = playerFloor();
+
+  if (p.riding) {
+    if (el2.state === 'moving') return { kind: 'wait', label: 'лифт едет…' };
+    const target = game.rideTarget ?? el2.floor;
+    if (target !== el2.floor) return { kind: 'elevator-go', key: 'E', label: `ехать на ${target === 0 ? 'подвал' : target + ' этаж'} · W/S — этаж` };
+    return { kind: 'elevator-exit', key: 'E', label: `выйти (${myK === 0 ? 'подвал' : myK + ' этаж'}) · W/S — этаж` };
+  }
+
+  /* щиток */
+  const sb = world.switchboard;
+  if (sb) {
+    const dx = Math.abs((p.x + p.w / 2) - (sb.x + sb.w / 2));
+    const dy = Math.abs((p.y + p.h) - (sb.y + sb.h));
+    if (dx < 46 && dy < 74) {
+      if (world.powerStage >= 3) return { kind: 'sb-done', label: 'свет уже есть' };
+      if (game.fuses > 0) return { kind: 'switchboard', key: 'E', label: `вставить пробку (${game.fuses})` };
+      return { kind: 'sb-empty', label: `нужны пробки · ${world.fusesInserted}/${world.fusesTotal}` };
+    }
+  }
+
+  /* лифт */
+  const elx = el2.x + el2.w / 2;
+  const nearX = Math.abs((p.x + p.w / 2) - elx) < el2.w / 2 + 46;
+  const nearY = Math.abs((p.y + p.h) - (walkY(myK))) < 40;
+  if (nearX && nearY) {
+    if (!el2.powered) return { kind: 'elevator-dead', label: 'лифт не работает' };
+    if (el2.state === 'moving') return { kind: 'wait', label: 'лифт едет…' };
+    if (el2.floor !== myK) return { kind: 'elevator-call', key: 'E', label: 'вызвать лифт' };
+    return { kind: 'elevator-enter', key: 'E', label: 'войти в лифт' };
+  }
+
+  /* NPC */
+  for (const n of world.npcs) {
+    if (n.near) return { kind: 'npc', npc: n, key: 'E', label: `поговорить: ${n.name}` };
+  }
+  return null;
+}
+
+function interact() {
+  if (game.mode !== 'play') return;
+  const a = game.prompt;
+  if (!a) return;
+  switch (a.kind) {
+    case 'switchboard': insertFuse(); break;
+    case 'sb-empty': toast('Нужны пробки. Они лежат по этажам.', 'bad'); break;
+    case 'elevator-enter': enterElevator(); break;
+    case 'elevator-call': callElevatorTo(playerFloor()); break;
+    case 'elevator-go': startElevator(); break;
+    case 'elevator-exit': exitElevator(); break;
+    case 'elevator-dead': toast('Лифт без света не поедет. Сначала пробка в щиток.', 'bad'); break;
+    case 'npc': talkTo(a.npc); break;
+    default: break;
+  }
+}
+
+function enterElevator() {
+  const el2 = world.elevator;
+  const p = game.player;
+  p.riding = true;
+  p.vx = 0; p.vy = 0;
+  game.rideTarget = el2.floor;
+  SND.ding();
+  toast('Лифт. W/S — этаж, E — ехать.', 'good');
+}
+
+function exitElevator() {
+  const el2 = world.elevator;
+  const p = game.player;
+  p.riding = false;
+  p.x = el2.x - p.w - 3;
+  p.y = el2.y + el2.h - p.h;
+  p.vx = 0; p.vy = 0;
+}
+
+function startElevator() {
+  const el2 = world.elevator;
+  const target = game.rideTarget ?? el2.floor;
+  if (target === el2.floor) { exitElevator(); return; }
+  el2.movingTo = target;
+  el2.state = 'moving';
+  rebuildGates();
+  SND.tone({ freq: 420, dur: 0.12, gain: 0.07, type: 'square' });
+}
+
+function callElevatorTo(floor) {
+  const el2 = world.elevator;
+  el2.movingTo = floor;
+  el2.state = 'moving';
+  toast('Лифт поехал за тобой.', 'good');
+}
+
+function talkTo(npc) {
+  if (!npc) return;
+  const line = npc.lines[npc.said % npc.lines.length];
+  npc.said++;
+  say({ x: npc.x, y: npc.y - 6, w: 20, kind: npc.kind }, line, 4.2);
+  SND.tone({ freq: 300 + Math.random() * 80, dur: 0.09, gain: 0.05, type: 'square' });
+}
+
+function toggleTorch() {
+  if (game.mode !== 'play') return;
+  if (game.torch.battery <= 0) {
+    toast('Фонарь сел. Батарейка — жёлтая. Ищи.', 'bad');
+    return;
+  }
+  game.torch.on = !game.torch.on;
+  SND.tone({ freq: game.torch.on ? 900 : 500, dur: 0.05, gain: 0.05, type: 'square' });
+  updateHud(true);
+}
+
+/* ───────────────────────────── H4. ЭКРАНЫ ────────────────────────────────── */
+let settingsReturn = 'menu';
+
+function startGame() {
+  el.ovStart.hidden = true;
+  el.ovPause.hidden = true;
+  el.ovEnd.hidden = true;
+  el.ovSet.hidden = true;
+  resetRun();
+  buildHearts();
+  buildFusePips();
+  game.mode = 'play';
+  game.flash = 0;
+  game.fade = 0;
+  SND.unlock();
+  SND.setEnabled(CONFIG.audio.enabled);
+  SND.ambientOn();
+  updateHud(true);
+  if (CONFIG.world.hints && world.fuseHints && world.fuseHints.length) {
+    const floors = world.fuseHints.map((h) => h.floor).join(', ');
+    setTimeout(() => toast('Слух: пробки на этажах ' + floors + '. Щиток — в подвале.', 'good'), 700);
+  }
+  announce('Игра началась. Этаж ' + CONFIG.building.startFloor + '.');
+}
+
+function pauseGame() {
+  if (game.mode !== 'play') return;
+  game.mode = 'pause';
+  el.ovPause.hidden = false;
+  SND.ambientOff();
+  announce('Пауза');
+}
+
+function resumeGame() {
+  if (game.mode !== 'pause') return;
+  el.ovPause.hidden = true;
+  el.ovSet.hidden = true;
+  game.mode = 'play';
+  lastT = nowMs();
+  SND.unlock();
+  SND.ambientOn();
+  announce('Продолжаем');
+}
+
+function openSettings() {
+  settingsReturn = game.mode;
+  settingsDirty = false;
+  if (game.mode === 'play') { game.mode = 'pause'; SND.ambientOff(); }
+  el.ovStart.hidden = true;
+  el.ovPause.hidden = true;
+  el.ovEnd.hidden = true;
+  el.ovSet.hidden = false;
+  syncSettingsUI();
+}
+
+function closeSettings() {
+  el.ovSet.hidden = true;
+  if (settingsReturn === 'play') { resumeGame(); return; }
+  if (settingsReturn === 'menu') { el.ovStart.hidden = false; return; }
+  if (settingsReturn === 'end') { el.ovEnd.hidden = false; return; }
+  el.ovPause.hidden = false;
+}
+
+function showEnd() {
+  game.mode = 'end';
+  SND.ambientOff();
+  const rows = [
+    ['время', fmtTime(game.playTime)],
+    ['пробок', `${world.fusesInserted}/${world.fusesTotal}`],
+    ['семечек', String(game.seeds)],
+    ['артефактов', `${game.artifactList.length}/6`],
+    ['нервов сдал', String(game.hitsTaken)],
+    ['обмороков', String(game.deaths)],
+  ];
+  const box = $('#endStats');
+  box.textContent = '';
+  for (const [k, v] of rows) {
+    const d = document.createElement('div');
+    d.className = 'stat';
+    const dt = document.createElement('dt'); dt.textContent = k;
+    const dd = document.createElement('dd'); dd.textContent = v;
+    d.append(dt, dd);
+    box.appendChild(d);
+  }
+  const sub = $('#endSub');
+  if (sub) sub.textContent = game.deaths === 0 ? 'без единого обморока' : `обмороков: ${game.deaths}`;
+  el.ovEnd.hidden = false;
+  announce('Дом освещён. Игра завершена.');
+}
+
+/* ───────────────────────────── H5. НАСТРОЙКИ ─────────────────────────────── */
+const SETTINGS_SPEC = [
+  { path: 'light.darkness', label: 'Темнота', min: 0.45, max: 0.98, step: 0.01, fmt: (v) => Math.round(v * 100) + '%' },
+  { path: 'player.torchRange', label: 'Фонарь: дальность', min: 110, max: 340, step: 5, fmt: (v) => Math.round(v) },
+  { path: 'player.torchDrain', label: 'Фонарь: расход', min: 0.4, max: 8, step: 0.1, fmt: (v) => v.toFixed(1) },
+  { path: 'player.run', label: 'Скорость ходьбы', min: 90, max: 240, step: 5, fmt: (v) => Math.round(v) },
+  { path: 'player.jump', label: 'Сила прыжка', min: 300, max: 580, step: 10, fmt: (v) => Math.round(v) },
+  { path: 'world.itemDensity', label: 'Предметы', min: 0.2, max: 2.2, step: 0.1, fmt: (v) => '×' + v.toFixed(1), restart: true },
+  { path: 'world.enemyDensity', label: 'Враги', min: 0, max: 2.2, step: 0.1, fmt: (v) => '×' + v.toFixed(1), restart: true },
+  { path: 'world.parallax', label: 'Параллакс', min: 0, max: 1.8, step: 0.05, fmt: (v) => v.toFixed(2) },
+  { path: 'building.floors', label: 'Этажей в доме', min: 5, max: 14, step: 1, fmt: (v) => String(v), restart: true },
+];
+
+function getPath(path) { return path.split('.').reduce((o, k) => (o ? o[k] : undefined), CONFIG); }
+function setPath(path, val) {
+  const parts = path.split('.');
+  const last = parts.pop();
+  const obj = parts.reduce((o, k) => o[k], CONFIG);
+  obj[last] = val;
+}
+
+function buildSettingsUI() {
+  const wrap = $('#setRows');
+  if (!wrap) return;
+  wrap.textContent = '';
+  for (const spec of SETTINGS_SPEC) {
+    const row = document.createElement('div');
+    row.className = 'set__row';
+    const lab = document.createElement('label');
+    lab.textContent = spec.label;
+    lab.htmlFor = 'set_' + spec.path.replace(/\./g, '_');
+    const out = document.createElement('output');
+    const inp = document.createElement('input');
+    inp.type = 'range';
+    inp.id = lab.htmlFor;
+    inp.min = String(spec.min); inp.max = String(spec.max); inp.step = String(spec.step);
+    const sync = () => { out.textContent = spec.fmt ? spec.fmt(Number(inp.value)) : inp.value; };
+    inp.addEventListener('input', () => {
+      setPath(spec.path, Number(inp.value));
+      sync();
+      saveSettings();
+      if (spec.restart) { hintDirty(); settingsDirty = true; }
+    });
+    row.append(lab, out, inp);
+    if (spec.restart) {
+      const hint = document.createElement('div');
+      hint.className = 'set__hint';
+      hint.textContent = 'применится после перезапуска дома';
+      row.appendChild(hint);
+    }
+    wrap.appendChild(row);
+    inp.dataset.path = spec.path;
+    inp._sync = sync;
+  }
+}
+
+let settingsDirty = false;
+function hintDirty() {
+  const btn = $('#btnSetClose');
+  if (btn) btn.textContent = 'Готово и перезапустить';
+}
+
+function syncSettingsUI() {
+  $$('#setRows input[type=range]').forEach((inp) => {
+    const v = getPath(inp.dataset.path);
+    if (v !== undefined) inp.value = String(v);
+    if (inp._sync) inp._sync();
+  });
+  const r = $('#chkRain'); if (r) r.checked = CONFIG.world.rain !== false;
+  const g = $('#chkGrain'); if (g) g.checked = CONFIG.world.grain !== false;
+  const h = $('#chkHints'); if (h) h.checked = CONFIG.world.hints !== false;
+  const s = $('#seedInput'); if (s) s.value = String(CONFIG.seed);
+  const btn = $('#btnSetClose'); if (btn) btn.textContent = 'Готово';
+}
+
+function rebuildHouse(newSeed) {
+  if (typeof newSeed === 'number') CONFIG.seed = clamp(Math.round(newSeed), 0, 999999999);
+  saveSettings();
+  buildWorld(CONFIG.seed);
+  bakeAll();
+  buildFusePips();
+  resetRun();
+  game.mode = 'menu';
+  game.cam.zoom = 0.9;
+  updateCamera(0, true);
+  el.ovStart.hidden = false;
+  el.ovPause.hidden = true;
+  el.ovEnd.hidden = true;
+  el.ovSet.hidden = true;
+  updateHud(true);
+  toast('Новый дом: сид ' + CONFIG.seed, 'good');
+}
+
+/* ───────────────────────────── H6. ВВОД ──────────────────────────────────── */
+const MOVE_KEYS = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'KeyA', 'KeyD', 'KeyW', 'KeyS', 'Space']);
+
+function typingInInput(e) {
+  const t = e.target;
+  return t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+}
+
+function onKeyDown(e) {
+  if (typingInInput(e)) {
+    if (e.code === 'Escape') e.target.blur();
+    return;
+  }
+  if (MOVE_KEYS.has(e.code)) e.preventDefault();
+  game.keys[e.code] = true;
+
+  if (e.code === 'F1') { e.preventDefault(); if (el.ovSet.hidden) openSettings(); else closeSettings(); return; }
+  if (e.code === 'Escape') {
+    if (!el.ovSet.hidden) { closeSettings(); return; }
+    if (game.mode === 'play') pauseGame();
+    else if (game.mode === 'pause') resumeGame();
+    return;
+  }
+  if (e.code === 'KeyM') { toggleSound(); return; }
+  if (e.code === 'KeyF') { toggleTorch(); return; }
+  if (e.code === 'KeyE') { interact(); return; }
+
+  if (game.mode === 'play') {
+    const p = game.player;
+    if (!p) return;
+    if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+      if (p.riding) {
+        game.rideTarget = clamp((game.rideTarget ?? world.elevator.floor) + 1, 0, CONFIG.building.floors);
+      } else if (!p.climbing) {
+        p.jumpBuf = CONFIG.player.jumpBuffer;
+      }
+    }
+    if ((e.code === 'ArrowDown' || e.code === 'KeyS') && p.riding) {
+      game.rideTarget = clamp((game.rideTarget ?? world.elevator.floor) - 1, 0, CONFIG.building.floors);
+    }
+  }
+  if (e.code === 'Enter' && game.mode === 'menu' && !el.ovStart.hidden) startGame();
+}
+
+function onKeyUp(e) {
+  game.keys[e.code] = false;
+}
+
+function toggleSound() {
+  CONFIG.audio.enabled = !CONFIG.audio.enabled;
+  SND.setEnabled(CONFIG.audio.enabled);
+  if (CONFIG.audio.enabled) SND.unlock();
+  saveSettings();
+  if (el.btnSound) el.btnSound.setAttribute('aria-pressed', String(CONFIG.audio.enabled));
+  toast(CONFIG.audio.enabled ? 'Звук включён' : 'Звук выключен');
+}
+
+function bindUI() {
+  window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('keyup', onKeyUp);
+  window.addEventListener('blur', () => { for (const k in game.keys) game.keys[k] = false; });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) SND.suspend?.();
+    else { lastT = nowMs(); if (game.mode === 'play') SND.unlock(); }
+  });
+  window.addEventListener('pagehide', () => SND.close());
+
+  $('#btnPlay')?.addEventListener('click', startGame);
+  $('#btnSetStart')?.addEventListener('click', openSettings);
+  $('#btnResume')?.addEventListener('click', resumeGame);
+  $('#btnSetPause')?.addEventListener('click', openSettings);
+  $('#btnRestart')?.addEventListener('click', startGame);
+  $('#btnSetClose')?.addEventListener('click', () => {
+    const need = settingsDirty;
+    settingsDirty = false;
+    closeSettings();
+    if (need) rebuildHouse(CONFIG.seed);
+  });
+  $('#btnSetReset')?.addEventListener('click', () => {
+    const seed = CONFIG.seed;
+    Object.assign(CONFIG, JSON.parse(JSON.stringify(DEFAULT_CONFIG)));
+    CONFIG.seed = seed;
+    saveSettings();
+    syncSettingsUI();
+    toast('Настройки сброшены');
+  });
+  $('#btnReroll')?.addEventListener('click', () => {
+    const seed = Math.floor(Math.random() * 999999);
+    rebuildHouse(seed);
+  });
+  $('#seedInput')?.addEventListener('change', (e) => {
+    const v = parseInt(e.target.value, 10);
+    if (Number.isFinite(v) && v >= 0) { rebuildHouse(v); }
+    else { e.target.value = String(CONFIG.seed); toast('Сид — это число', 'bad'); }
+  });
+  $('#chkRain')?.addEventListener('change', (e) => { CONFIG.world.rain = e.target.checked; saveSettings(); });
+  $('#chkGrain')?.addEventListener('change', (e) => {
+    CONFIG.world.grain = e.target.checked; saveSettings(); applyGrain();
+  });
+  $('#chkHints')?.addEventListener('change', (e) => { CONFIG.world.hints = e.target.checked; saveSettings(); });
+
+  el.btnSound?.addEventListener('click', toggleSound);
+  el.btnTorch?.addEventListener('click', toggleTorch);
+  el.btnSet?.addEventListener('click', () => { if (el.ovSet.hidden) openSettings(); else closeSettings(); });
+  el.btnPause?.addEventListener('click', () => { if (game.mode === 'play') pauseGame(); else if (game.mode === 'pause') resumeGame(); });
+  $('#btnAgain')?.addEventListener('click', () => { el.ovEnd.hidden = true; startGame(); });
+  $('#btnNewHouse')?.addEventListener('click', () => { rebuildHouse(Math.floor(Math.random() * 999999)); });
+
+  /* тап по полю = действие (удобно на телефоне) */
+  canvas.addEventListener('pointerdown', (e) => {
+    if (game.mode !== 'play') return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    const w = screenToWorld(e.clientX, e.clientY);
+    const p = game.player;
+    if (p && Math.abs(w.x - (p.x + p.w / 2)) < 26 && Math.abs(w.y - (p.y + p.h / 2)) < 34) { toggleTorch(); return; }
+    interact();
+  });
+
+  /* мобильные кнопки */
+  const touchMap = { left: ['ArrowLeft'], right: ['ArrowRight'], up: ['ArrowUp'], down: ['ArrowDown'] };
+  $$('.tbtn').forEach((b) => {
+    const k = b.dataset.k;
+    const press = (on) => {
+      b.classList.toggle('on', on);
+      if (touchMap[k]) {
+        for (const code of touchMap[k]) game.keys[code] = on;
+        if (on && k === 'up') {
+          const p = game.player;
+          if (p) { if (p.riding) game.rideTarget = clamp((game.rideTarget ?? world.elevator.floor) + 1, 0, CONFIG.building.floors); else p.jumpBuf = CONFIG.player.jumpBuffer; }
+        }
+        if (on && k === 'down') {
+          const p = game.player;
+          if (p && p.riding) game.rideTarget = clamp((game.rideTarget ?? world.elevator.floor) - 1, 0, CONFIG.building.floors);
+        }
+      }
+      if (on && k === 'act') interact();
+      if (on && k === 'torch') toggleTorch();
+    };
+    b.addEventListener('pointerdown', (e) => { e.preventDefault(); press(true); });
+    b.addEventListener('pointerup', (e) => { e.preventDefault(); press(false); });
+    b.addEventListener('pointercancel', () => press(false));
+    b.addEventListener('pointerleave', () => press(false));
+  });
+}
+
+function layoutTouch() { /* зарезервировано под перестройку раскладки */ }
+function applyGrain() {
+  const scan = $('.fx-scan'), grain = $('.fx-grain');
+  if (scan) scan.style.display = CONFIG.world.grain ? '' : 'none';
+  if (grain) grain.style.display = CONFIG.world.grain ? '' : 'none';
+}
+
+/* ───────────────────────────── H7. СТАРТ ─────────────────────────────────── */
+function init() {
+  loadSettings();
+  resize();
+  resizeLight();
+  buildWorld(CONFIG.seed);
+  bakeAll();
+  bakeBackdrop();
+  buildHearts();
+  buildFusePips();
+  buildSettingsUI();
+  bindUI();
+  applyGrain();
+  game.flash = 0;
+  game.fade = 0;
+  resetRun();
+  game.mode = 'menu';
+  updateCamera(0, true);
+  updateHud(true);
+  if (el.btnSound) el.btnSound.setAttribute('aria-pressed', String(CONFIG.audio.enabled));
+  if ('ontouchstart' in window || (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)) {
+    document.body.classList.add('touch-mode');
+  }
+  const s = $('#seedInput'); if (s) s.value = String(CONFIG.seed);
+  requestAnimationFrame((t) => { lastT = t; loop(t); });
+}
+
+/* Диагностика для тестов и отладки (только чтение состояния + телепорт). */
+try {
+  Object.defineProperty(window, 'PROBS', {
+    configurable: false, writable: false,
+    value: Object.freeze({
+      state: () => ({
+        mode: game.mode,
+        floor: game.player ? playerFloor() : null,
+        x: game.player ? Math.round(game.player.x) : 0,
+        y: game.player ? Math.round(game.player.y) : 0,
+        onGround: game.player ? game.player.onGround : false,
+        climbing: game.player ? game.player.climbing : false,
+        vy: game.player ? Math.round(game.player.vy) : 0,
+        ladderNear: game.player ? !!ladderAt(game.player.x + game.player.w / 2, game.player.y + 4) : false,
+        ladders: world.ladders.map((l) => ({ k: l.k, to: l.to, x: l.x, yTop: l.yTop, yBottom: l.yBottom })),
+        riding: game.player ? game.player.riding : false,
+        deaths: game.deaths,
+        hits: game.hitsTaken,
+        nerves: game.nerves,
+        seeds: game.seeds,
+        fuses: game.fuses,
+        inserted: world.fusesInserted,
+        powerStage: world.powerStage,
+        torch: game.torch.on,
+        battery: Math.round(game.torch.battery),
+        itemsLeft: world.items.filter((i) => !i.taken).length,
+        enemies: world.enemies.length,
+        fps: fpsValue,
+        elev: { floor: world.elevator.floor, state: world.elevator.state, powered: world.elevator.powered },
+      }),
+      config: CONFIG,
+      fuseHints: () => world.fuseHints,
+      items: () => world.items.filter((i) => !i.taken).map((i) => ({ type: i.type, x: Math.round(i.x), y: Math.round(i.y), floor: i.floor })),
+      enemies: () => world.enemies.map((e) => ({ kind: e.kind, floor: e.floor, x: Math.round(e.x), y: Math.round(e.y), state: e.state })),
+      npcs: () => world.npcs.map((n) => ({ kind: n.kind, floor: n.floor, x: Math.round(n.x), near: !!n.near })),
+      lighting: () => world.lights.filter((l) => l.on).length,
+      go: (floor, x) => {
+        const p = game.player;
+        p.riding = false;
+        p.x = x ?? BW() / 2;
+        p.y = walkY(clamp(floor, 0, CONFIG.building.floors)) - p.h;
+        p.vx = 0; p.vy = 0;
+        updateCamera(0, true);
+      },
+      torch: (on) => { game.torch.on = !!on; },
+      give: (type) => {
+        if (type === 'fuse') game.fuses++;
+        if (type === 'seed') game.seeds++;
+        updateHud(true);
+      },
+      power: (n) => { world.fusesInserted = clamp(n, 0, 3); world.powerStage = world.fusesInserted; applyPowerStage(); },
+      restart: () => startGame(),
+      rebuild: (seed) => rebuildHouse(seed),
+      fps: () => fpsValue,
+    }),
+  });
+} catch (_) {}
+
+init();
+})();
+</script>
+</body>
+</html>
