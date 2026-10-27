@@ -110,8 +110,9 @@
           align-items:flex-end; padding:0 clamp(10px,3vw,22px) calc(clamp(10px,3vw,22px) + env(safe-area-inset-bottom)); pointer-events:none; }
   .touch > *{ pointer-events:auto; }
   /* крестовина: слева-вправо всегда, вверх/вниз — только в «вертикальной» зоне */
+  /* контекстная кнопка — НАД крестовиной: появляется выше места, куда жмут для ходьбы */
   .pad{ display:grid; grid-template-columns:auto auto; grid-template-rows:auto auto auto auto; gap:7px;
-        grid-template-areas:"v v" "l r" "d d" "c c"; align-items:center; justify-items:center; }
+        grid-template-areas:"c c" "v v" "l r" "d d"; align-items:center; justify-items:center; }
   .pad [data-k="ctx"]{
     grid-area:c; width:min(46vw,164px); height:46px; display:none;
     font:800 12px/1.05 var(--mono); letter-spacing:.1em; text-transform:uppercase;
@@ -1050,10 +1051,11 @@ function buildHome(fl) {
   addProp({ kind: 'desk', f: fl.f, x: deskX, y: Y0, w: deskW, h: deskH, solid: true, home: true });
   addProp({ kind: 'pc', f: fl.f, x: deskX + 12, y: Y0 - deskH, w: 34, h: 26, solid: false, home: true, layer: 'front' });
   addProp({ kind: 'chair', f: fl.f, x: deskX + deskW + 6, y: Y0, w: 22, h: 30, solid: false, home: true, seatX: deskX + deskW + 17, layer: 'back' });
-  addProp({ kind: 'mirror', f: fl.f, x: deskX + 96, y: Y0 - 66, w: 22, h: 34, solid: false, home: true, layer: 'back' });
-  addProp({ kind: 'poster', f: fl.f, x: deskX + 140, y: Y0 - 78, w: 44, h: 40, solid: false, home: true, layer: 'back' });
+  /* зеркало — на стене у стола, на уровне глаз; плакат — между окнами, ниже потолка */
+  addProp({ kind: 'mirror', f: fl.f, x: deskX + 92, y: Y0 - 38, w: 22, h: 30, solid: false, home: true, layer: 'back' });
+  addProp({ kind: 'poster', f: fl.f, x: living.x + living.w * 0.47, y: Y0 - 44, w: 42, h: 36, solid: false, home: true, layer: 'back' });
   addProp({ kind: 'bed', f: fl.f, x: living.x + living.w * 0.52, y: Y0, w: 60, h: 26, solid: true, home: true });
-  addProp({ kind: 'shelf', f: fl.f, x: living.x2 - 40, y: Y0, w: 30, h: 54, solid: true, home: true });
+  addProp({ kind: 'shelf', f: fl.f, x: living.x2 - 132, y: Y0, w: 30, h: 54, solid: true, home: true });
   addProp({ kind: 'carpet', f: fl.f, x: living.x + living.w * 0.34, y: Y0 - 2, w: 96, h: 4, solid: false, home: true, layer: 'back' });
   addProp({ kind: 'plant', f: fl.f, x: living.x + living.w * 0.74, y: Y0, w: 16, h: 30, solid: false, home: true });
   world.seat = { x: deskX + deskW + 17, y: Y0, f: fl.f };
@@ -1064,7 +1066,7 @@ function buildHome(fl) {
     addProp({ kind: 'table', f: fl.f, x: kitchen.x2 - 62, y: Y0, w: 42, h: 30, solid: true, home: true });
     addProp({ kind: 'tv', f: fl.f, x: kitchen.x + 108, y: Y0, w: 30, h: 28, solid: false, home: true, layer: 'front' });
     addProp({ kind: 'phone', f: fl.f, x: kitchen.x2 - 26, y: Y0 - 34, w: 12, h: 14, solid: false, home: true, layer: 'front' });
-    addProp({ kind: 'wardrobe', f: fl.f, x: kitchen.x + 4, y: Y0, w: 14, h: 60, solid: false, home: true, layer: 'back' });
+    addProp({ kind: 'wardrobe', f: fl.f, x: kitchen.x2 - 124, y: Y0, w: 14, h: 60, solid: false, home: true, layer: 'back' });
   }
   world.homeRoom = { x1: living.x + 8, x2: living.x2 - 8 };
   world.homeRooms = { living: { x1: living.x, x2: living.x2 }, kitchen: kitchen ? { x1: kitchen.x, x2: kitchen.x2 } : null };
@@ -2229,87 +2231,111 @@ function talkNpc(n) {
   storyAdd('Поговорил с ' + n.name + ' (' + n.role + ').', 'talk:' + n.id);
 }
 
-/* ── ближайшее действие ── */
-function nearestAction() {
-  if (player.dead) return null;
-  let best = null, bd = 1e9;
-  const consider = (d, obj) => { if (d < bd) { bd = d; best = obj; } };
-  const pf = player.floor;
+/* ── ближайшее действие ──
+   Выбор честно зависит от положения героя: у каждого объекта есть «горячая точка»
+   и свой приоритет-эпсилон. Отошёл на шаг — активным становится соседний объект.
+   Раньше ПК/полка жёстко перебивали всё вокруг, из-за чего нельзя было взять
+   отмычку со стола и открыть дверь рядом с полкой. */
+const ACT_EPS = { item: 0, door: 2.5, seat: 3, npc: 3.5, pc: 4, prop: 6, fusebox: 2, lift: 8 };
 
-  /* в лифте */
-  if (player.riding) {
-    return { kind: 'lift', label: liftHere() && world.elevator.state === 'open' ? 'Выйти из лифта' : 'Панель лифта', ref: world.elevator };
-  }
+function actionCandidates() {
+  const pf = player.floor;
+  const out = [];
+  const add = (kind, ref, label, d, eps) => {
+    if (!Number.isFinite(d)) return;
+    out.push({ kind, ref, label, d, score: Math.max(0, d) + (eps === undefined ? (ACT_EPS[kind] || 0) : eps) });
+  };
+
   /* двери */
   for (const d of world.doors) {
     if (d.f !== pf) continue;
     const dx = Math.abs(player.x - d.x);
-    if (dx < 36 && Math.abs(player.y - d.y) < 70) {
-      const locked = d.state === 'locked';
-      const bolted = d.state === 'bolted';
-      let label;
-      if (bolted) label = 'Дверь на чердак (заперта)';
-      else if (locked) label = d.key && player.keys.includes(d.key) ? 'Открыть ' + KEY_NAME[d.key] + ' ключом'
-        : player.picks > 0 ? 'Вскрыть отмычкой (удерживай E)' : 'Заперто: ' + (KEY_NAME[d.key] || '');
-      else label = (d.state === 'open' ? 'Закрыть дверь' : 'Открыть дверь') + (d.num ? ' кв.' + d.num : '');
-      consider(dx, { kind: 'door', ref: d, label, locked });
-    }
+    if (dx > 40 || Math.abs(player.y - d.y) > 70) continue;
+    const locked = d.state === 'locked';
+    const bolted = d.state === 'bolted';
+    let label;
+    if (bolted) label = 'Дверь на чердак (заперта)';
+    else if (locked) label = d.key && player.keys.includes(d.key) ? 'Открыть ' + KEY_NAME[d.key] + ' ключом'
+      : player.picks > 0 ? 'Вскрыть отмычкой (удерживай E)' : 'Заперто: ' + (KEY_NAME[d.key] || '');
+    else label = (d.state === 'open' ? 'Закрыть дверь' : 'Открыть дверь') + (d.num ? ' кв.' + d.num : '');
+    add('door', d, label, dx - 26, ACT_EPS.door - 1.0);   /* проём ±26: дверь главнее приткнутой к ней мебели */
   }
-  /* предметы-мебель: считаем расстояние до края, а не до центра */
+
+  /* мебель и техника: дистанция до края, а не до центра */
   for (const p of world.props) {
     if (p.f !== pf) continue;
+    if (Math.abs(player.y - p.y) > 64) continue;
     const cx = p.x + p.w / 2;
     const edge = Math.max(0, Math.abs(player.x - cx) - p.w / 2);
-    if (Math.abs(player.y - p.y) > 64) continue;
     if (p.kind === 'pc') {
-      /* компьютер — главный интерактив у стола: подошёл слева — сразу кнопка */
-      if (edge < 42) consider(edge * 0.05, { kind: 'prop', ref: p, label: 'Включить компьютер' });
+      /* рабочее место перед монитором: ±30 от его центра — это компьютер, край стола — уже стол */
+      const dPc = Math.max(0, Math.abs(player.x - cx) - 30);
+      if (dPc < 46) add('prop', p, 'Включить компьютер', dPc, ACT_EPS.pc);
       continue;
     }
-    if (edge > 26) continue;
+    if (edge > 30) continue;
     const cfg = CONFIG.interactions[p.kind];
     if (!cfg) continue;
-    consider(edge * 0.8 + 6, { kind: 'prop', ref: p, label: 'Осмотреть: ' + (cfg.title || p.kind) });
+    /* мелкая вещь на столе/полке важнее крупной мебели под ней (чайник важнее плиты, фикус — полки):
+       стоя над вещью — осматриваешь вещь, шаг в сторону — крупную мебель */
+    const narrow = p.w <= 24 ? -1.5 : 0;
+    add('prop', p, 'Осмотреть: ' + (cfg.title || p.kind), edge, ACT_EPS.prop + narrow);
   }
-  /* предметы */
+
+  /* предметы на полу и на мебели — самый точный интерактив, у них приоритет */
   for (const it of world.items) {
     if (it.taken || it.f !== pf) continue;
     const dx = Math.abs(it.x - player.x);
-    if (dx < 28 && Math.abs(it.y - player.y) < 44) {
-      const nm = { fuse: 'Взять пробку', battery: 'Взять батарейку', key: 'Взять ' + (KEY_NAME[it.key] || '') + ' ключ', pick: 'Взять отмычку', note: 'Прочитать записку' }[it.type] || 'Взять';
-      consider(dx * 0.55, { kind: 'item', ref: it, label: nm });
-    }
+    if (dx > 30 || Math.abs(it.y - player.y) > 46) continue;
+    const nm = { fuse: 'Взять пробку', battery: 'Взять батарейку', key: 'Взять ' + (KEY_NAME[it.key] || '') + ' ключ', pick: 'Взять отмычку', note: 'Прочитать записку' }[it.type] || 'Взять';
+    add('item', it, nm, dx, ACT_EPS.item);
   }
+
   /* щиток */
   const fb = world.fuseBox;
-  if (fb && pf === 0 && Math.abs(player.x - (fb.x + fb.w / 2)) < 60 && Math.abs(player.y - (fb.y + fb.h)) < 58) {
-    consider(5, { kind: 'fusebox', ref: fb, label: world.powerStage >= 3 ? 'Щиток: свет есть' : player.fuses > 0 ? 'Вставить пробку (' + player.fuses + ')' : 'Щиток: нужны пробки' });
-  }
-  /* соседи рядом (в комнате) */
-  for (const n of world.npcs) {
-    if (n.f !== pf) continue;
-    if (Math.abs(n.x - player.x) < 40 && Math.abs(n.y - player.y) < 54) {
-      consider(Math.abs(n.x - player.x) * 0.7, { kind: 'npc', ref: n, label: 'Поговорить: ' + n.name });
+  if (fb && pf === 0) {
+    const dx = Math.abs(player.x - (fb.x + fb.w / 2));
+    if (dx < 64 && Math.abs(player.y - (fb.y + fb.h)) < 58) {
+      add('fusebox', fb, world.powerStage >= 3 ? 'Щиток: свет есть' : player.fuses > 0 ? 'Вставить пробку (' + player.fuses + ')' : 'Щиток: нужны пробки', Math.max(0, dx - 20));
     }
   }
+
+  /* соседи */
+  for (const n of world.npcs) {
+    if (n.f !== pf) continue;
+    const dx = Math.abs(n.x - player.x);
+    if (dx < 44 && Math.abs(n.y - player.y) < 54) add('npc', n, 'Поговорить: ' + n.name, dx, ACT_EPS.npc);
+  }
+
   /* лифт */
   if (liftNearby()) {
     const E = world.elevator;
     const label = world.powerStage < 2 ? 'Лифт мёртв: нет света'
       : !liftHere() ? 'Вызвать лифт'
         : E.state === 'open' ? 'Войти в лифт' : 'Открыть лифт';
-    consider(24, { kind: 'lift', ref: E, label });
+    add('lift', E, label, Math.max(0, Math.abs(player.x - (E.x + E.w / 2)) - E.w / 2 - 18), ACT_EPS.lift);
   }
-  /* стул: сесть / встать */
-  if (player.seated) return { kind: 'seat', ref: 'stand', label: 'Встать' };
+
+  /* стул */
   const seat = seatInfo();
-  if (seat && Math.abs(player.x - seat.x) < 34 && !player.rail) {
-    /* ближе к компьютеру, чем к стулу, — предлагаем компьютер, иначе посадку */
-    const nearPc = world.props.some((p) => p.f === pf && p.kind === 'pc' &&
-      Math.abs(player.x - (p.x + p.w / 2)) < Math.abs(player.x - seat.x));
-    if (!nearPc) consider(1.2, { kind: 'seat', ref: 'sit', label: 'Сесть' });
+  if (seat && Math.abs(player.x - seat.x) < 36 && !player.rail) {
+    add('seat', 'sit', 'Сесть', Math.abs(player.x - seat.x) - 6, ACT_EPS.seat);
   }
-  return best;
+  return out;
+}
+
+function nearestAction() {
+  if (player.dead) return null;
+  if (player.riding) {
+    return { kind: 'lift', label: liftHere() && world.elevator.state === 'open' ? 'Выйти из лифта' : 'Панель лифта', ref: world.elevator };
+  }
+  if (player.seated) return { kind: 'seat', ref: 'stand', label: 'Встать' };
+  const list = actionCandidates();
+  if (!list.length) return null;
+  list.sort((a, b) => a.score - b.score);
+  /* выбор меняется, как только герой делает шаг: соседи не блокируют друг друга */
+  const best = list[0];
+  return { kind: best.kind, ref: best.ref, label: best.label, locked: best.kind === 'door' && best.ref.state === 'locked' };
 }
 
 function doAction() {
@@ -2450,6 +2476,9 @@ const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d', { alpha: false });
 const darkCanvas = document.createElement('canvas');
 const dctx = darkCanvas.getContext('2d');
+/* снимок «улицы» до отрисовки дома: через окна видно то же небо/город/погоду, что и снаружи */
+const bgCanvas = document.createElement('canvas');
+const bgctx = bgCanvas.getContext('2d');
 const cam = { x: 0, y: 0, z: 2.4, snap: true, shake: 0 };
 let viewW = 960, viewH = 600, dpr = 1;
 
@@ -2465,6 +2494,8 @@ function resizeCanvas() {
   canvas.style.height = viewH + 'px';
   darkCanvas.width = Math.max(1, Math.round(canvas.width * 0.5));
   darkCanvas.height = Math.max(1, Math.round(canvas.height * 0.5));
+  bgCanvas.width = darkCanvas.width;      /* половинное разрешение: фон, детали не нужны */
+  bgCanvas.height = darkCanvas.height;
   cam.snap = true;
 }
 
@@ -2476,6 +2507,14 @@ function setWorld() {
   ctx.setTransform(cam.z * dpr, 0, 0, cam.z * dpr, ox * dpr, oy * dpr);
 }
 function setScreen() { ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+/* копия кадра «на улице» — её показывают окна */
+function captureBackdrop() {
+  try {
+    bgctx.setTransform(1, 0, 0, 1, 0, 0);
+    bgctx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+    bgctx.drawImage(canvas, 0, 0);
+  } catch (_) {}
+}
 const R = (x, y, w, h, fill, stroke) => {
   if (fill) { ctx.fillStyle = fill; ctx.fillRect(x, y, w, h); }
   if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1 / cam.z; ctx.strokeRect(x + 0.5 / cam.z, y + 0.5 / cam.z, w - 1 / cam.z, h - 1 / cam.z); }
@@ -2497,7 +2536,10 @@ const poly = (pts, fill, stroke) => {
 function updateCamera(dt) {
   const pitch = world.pitch;
   const byFloors = (viewH / (CONFIG.display.floorsOnScreen * pitch)) * CONFIG.display.zoomBias;
-  const byWidth = viewW / 300;
+  /* ширина лишь не даёт «увидеть меньше» горстки комнат: на узких экранах порог мягче,
+     иначе «Приближение» (сколько этажей в кадре) не работало бы на телефоне */
+  const minSpan = clamp(viewW * 0.33, 150, 300);
+  const byWidth = viewW / minSpan;
   const z = clamp(Math.min(byFloors, byWidth), Math.max(1.05, viewW / 1700), 4.6);
   cam.z = lerp(cam.z, z, cam.snap ? 1 : Math.min(1, dt * 6));
   const cy = CONFIG.camera.centerY;
@@ -2880,28 +2922,56 @@ function drawFloorBack(fl) {
   R(world.liftX, y - h, world.liftW, h, '#1b1826');
 }
 
-/* ── окна ── */
+/* ── окна: стекло прозрачное — видно улицу, небо и погоду ── */
 function drawWindows(fl) {
   if (fl.isRoof || fl.isBase) return;
   const t = CONFIG.env.time;
   const night = t === 'night' || t === 'dusk';
+  const lit = world.powerStage >= 3;
+
+  /* 1) стекло: кусок «улицы», снятый до отрисовки дома */
+  setScreen();
   for (const w of fl.windows) {
-    R(w.x - 4, w.y - 4, w.w + 8, w.h + 8, '#2a2434');
-    const lit = world.powerStage >= 3 && (w.x % 3 < 1.6);
-    if (night && !lit) {
-      R(w.x, w.y, w.w, w.h, '#101a2e');
-      R(w.x, w.y, w.w, w.h * 0.5, 'rgba(140,170,220,.10)');
-      R(w.x + w.w * 0.6, w.y + 4, 2, 2, 'rgba(255,255,255,.25)');
-    } else {
-      const g = ctx.createLinearGradient(0, w.y, 0, w.y + w.h);
-      g.addColorStop(0, lit ? '#ffe3a8' : '#7fa7c8');
-      g.addColorStop(1, lit ? '#e8b878' : '#4e6d8c');
-      R(w.x, w.y, w.w, w.h, g);
-    }
+    const sx = SX(w.x), sy = SY(w.y);
+    const sw = Math.max(1, w.w * cam.z), sh = Math.max(1, w.h * cam.z);
+    if (sx > viewW || sy > viewH || sx + sw < 0 || sy + sh < 0) continue;
+    ctx.save();
+    ctx.beginPath(); ctx.rect(sx, sy, sw, sh); ctx.clip();
+    try {
+      const k = bgCanvas.width / canvas.width;
+      if (bgCanvas.width > 1) ctx.drawImage(bgCanvas, sx * dpr * k, sy * dpr * k, sw * dpr * k, sh * dpr * k, sx, sy, sw, sh);
+    } catch (_) {}
+    /* тон стекла */
+    ctx.fillStyle = lit ? 'rgba(255,226,170,.14)' : night ? 'rgba(96,126,186,.18)' : 'rgba(176,208,236,.14)';
+    ctx.fillRect(sx, sy, sw, sh);
+    /* узкий диагональный блик — стекло, а не зеркало */
+    ctx.fillStyle = 'rgba(255,255,255,.055)';
+    ctx.beginPath();
+    ctx.moveTo(sx + sw * 0.12, sy + sh);
+    ctx.lineTo(sx + sw * 0.40, sy);
+    ctx.lineTo(sx + sw * 0.50, sy);
+    ctx.lineTo(sx + sw * 0.22, sy + sh);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+  setWorld();
+
+  /* 2) рама, переплёт, подоконник — поверх стекла */
+  for (const w of fl.windows) {
+    const b = 4;
+    R(w.x - b, w.y - b, w.w + b * 2, b, '#2a2434');            /* верх */
+    R(w.x - b, w.y + w.h, w.w + b * 2, b, '#2a2434');          /* низ */
+    R(w.x - b, w.y, b, w.h, '#2a2434');                        /* левая стойка */
+    R(w.x + w.w, w.y, b, w.h, '#2a2434');                      /* правая стойка */
+    R(w.x - b, w.y - b, w.w + b * 2, 1.3, withAlpha('#ffffff', .14));
+    /* переплёт */
     R(w.x + w.w / 2 - 1.4, w.y, 2.8, w.h, '#2a2434');
     R(w.x, w.y + w.h / 2 - 1.2, w.w, 2.4, '#2a2434');
-    R(w.x - 6, w.y + w.h + 3, w.w + 12, 3, '#3a3550');
-    R(w.x - 4, w.y - 4, w.w + 8, 1.4, withAlpha('#ffffff', .12));
+    /* откос и подоконник */
+    R(w.x - 6, w.y + w.h + b, w.w + 12, 3, '#3a3550');
+    R(w.x - 6, w.y + w.h + b, w.w + 12, 1, withAlpha('#ffffff', .12));
+    R(w.x - b, w.y - b, 1.4, w.h + b * 2, 'rgba(0,0,0,.28)');
   }
 }
 
@@ -4677,6 +4747,9 @@ function render() {
   drawWeather();
   setWorld();
   drawStreet();
+  setScreen();
+  captureBackdrop();     /* небо + город + погода + улица — это увидят окна */
+  setWorld();
   drawBuilding();
   drawItems();
   drawNpcs();
@@ -4788,6 +4861,7 @@ function init() {
       },
       rails: () => world.rails.map((r) => ({ f: r.f, len: Math.round(r.len), y0: Math.round(r.y0), y1: Math.round(r.y1), yMid: Math.round(r.yMid) })),
       items: () => world.items.map((i) => ({ id: i.id, type: i.type, f: i.f, x: Math.round(i.x), y: Math.round(i.y), key: i.key || null, taken: i.taken })),
+      props: () => world.props.map((q) => ({ id: q.id, kind: q.kind, f: q.f, x: Math.round(q.x), w: Math.round(q.w), h: Math.round(q.h), y: Math.round(q.y), solid: !!q.solid })),
       enemies: () => world.enemies.map((e) => ({ type: e.type, f: e.f, x: Math.round(e.x), dead: e.dead, alert: Number(e.alert.toFixed(2)) })),
       npcs: () => world.npcs.map((n) => ({ id: n.id, name: n.name, f: n.f, x: Math.round(n.x), doorId: n.doorId })),
       talk: (id) => { const n = world.npcs.find((z) => z.id === id); if (n) talkNpc(n); },
@@ -4816,6 +4890,7 @@ function init() {
       setWeather: (k) => { if (WEATHER_KEYS.includes(k)) { CONFIG.env.weather = k; world.weather.kind = k; saveSettings(); } },
       setSprite: (k) => { if (HOODIE_NAME[k]) { CONFIG.sprites.player = k; saveSettings(); } },
       setFloorsOnScreen: (n) => { CONFIG.display.floorsOnScreen = clamp(Number(n) || 3, 2, 5); cam.snap = true; },
+      zoom: () => cam.z,
       darkness: (v) => { CONFIG.light.darkness = clamp(Number(v) || 0, 0, 0.98); },
       setZoom: (n) => { CONFIG.display.zoomBias = clamp(Number(n) || 1, 0.7, 1.6); cam.snap = true; },
       toggleTorch: () => toggleTorch(),
@@ -4839,5 +4914,5 @@ function init() {
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
 else init();
 })();
-</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a511253ddf1f96f0',t:'MTc5MzA5ODI4NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a511742bef938096',t:'MTc5MzEwMTUxOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
